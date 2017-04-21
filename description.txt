@@ -1,0 +1,3 @@
+Title: Better Trench Tool
+Author: SadBlobfish
+An enhanced version of the trench tools from Lilboarder's trench digging add-on
