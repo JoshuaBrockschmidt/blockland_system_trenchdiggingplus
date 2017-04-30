@@ -19,7 +19,7 @@ package BetterTrenchToolPackage {
 
 	function GameConnection::onDeath(%this, %a, %b, %c, %d) {
 		%this.BTT_setMode(BTT_DisabledMode);
-		
+
 		parent::onDeath(%this, %a, %b, %c, %d);
 	}
 
@@ -43,14 +43,14 @@ package BetterTrenchToolPackage {
 							%client.BTT_cubeSizeBricks =
 								 $BTT::MaxCubeSizeBricks;
 						else
-							%client.playthread(2, shiftUp);
+							%client.player.playthread(2, shiftUp);
 						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSizeBricks);
 					} else if (%z < 0) {
 						%client.BTT_cubeSizeBricks--;
 						if (%client.BTT_cubeSizeBricks < 1)
 							%client.BTT_cubeSizeBricks = 1;
 						else
-							%client.playthread(2, shiftDown);
+							%client.player.playthread(2, shiftDown);
 						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSizeBricks);
 					}
 				}
