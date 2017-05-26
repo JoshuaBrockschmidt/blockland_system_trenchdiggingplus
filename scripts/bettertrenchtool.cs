@@ -18,7 +18,7 @@ package BetterTrenchToolPackage {
 	}
 
 	function GameConnection::onDeath(%this, %a, %b, %c, %d) {
-		%this.BTT_setMode(BTT_DisabledMode);
+		%this.BTT_setMode(BTT_DisabledMode, 1);
 
 		parent::onDeath(%this, %a, %b, %c, %d);
 	}
