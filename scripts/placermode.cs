@@ -66,6 +66,7 @@ function BTT_PlacerMode_ghostLoop(%client) {
 }
 
 function BTT_PlacerMode::fire(%this, %client) {
+	// TODO: do not place brick if someone is inside the ghost brick; do not place bricks on players
 	if(%client.trenchDirt <= 0 && !%client.isInfiniteMiner) {
 		%client.centerPrint("\c3You have no dirt to release!", 1);
 	}
@@ -77,6 +78,7 @@ function BTT_PlacerMode::fire(%this, %client) {
 			%isBrick = getWord(%args, 6);
 			%brickGroup = getWord(%args, 7);
 			if (%isBrick) {
+				// Place bricks
 				%displace = vectorScale("0.25 0.25 0.3", %client.BTT_cubeSizeBricks - 1);
 				%cornerPos = vectorSub(%pos, %displace);
 				%numBricks = 0;
@@ -89,6 +91,51 @@ function BTT_PlacerMode::fire(%this, %client) {
 							%newBrick = new fxDtsBrick() {
 								position = %brickPos;
 								datablock = brick1x1DirtData;
+								colorId = %client.currentColor;
+								colorFxId = 0;
+								shapeFxId = 0;
+								client = %client;
+							};
+							%newBrick.isPlanted = 1;
+							%newBrick.setTrusted(1);
+							%error = %newBrick.plant();
+							if(%error && %error != 2) {
+								%newBrick.delete();
+							} else {
+								%brickGroup.add(%newBrick);
+								%bricks[%numBricks] = %newBrick;
+								%numBricks++;
+								%client.trenchDirt--;
+								if (%client.trenchDirt == 0) {
+									%cont = 0;
+									break;
+								}
+							}
+						}
+						if (!%cont) break;
+					}
+					if (!%cont) break;
+				}
+				for (%i = 0; %i < %numBricks; %i++) {
+					%b = %bricks[%i];
+					if (isObject(%b))
+						BTT_refill(%b);
+				}
+			}
+			else {
+				// Place cubes
+				%displace = vectorScale("0.5 0.5 0.5", %client.BTT_cubeSizeCubes - 1);
+				%cornerPos = vectorSub(%pos, %displace);
+				%numBricks = 0;
+				%cont = 1;
+				// TODO: get normal and begin by placing bricks furthest away
+				for (%x = 0; %x < %client.BTT_cubeSizeCubes; %x++) {
+					for (%y = 0; %y < %client.BTT_cubeSizeCubes; %y++) {
+						for (%z = 0; %z < %client.BTT_cubeSizeCubes; %z++) {
+							%brickPos = vectorAdd(%cornerPos, %x SPC %y SPC %z);
+							%newBrick = new fxDtsBrick() {
+								position = %brickPos;
+								datablock = brick2xCubeDirtData;
 								colorId = %client.currentColor;
 								colorFxId = 0;
 								shapeFxId = 0;
