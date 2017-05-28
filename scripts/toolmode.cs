@@ -75,7 +75,7 @@ function servercmdBTTHelp(%this, %section) {
 		%this.chatMessage("\c3Placer Mode \c6is for placing trench dirt.");
 		%this.chatMessage("\c6Use <Shift Brick Up> \c6to increase the amount of dirt you place/dig.");
 		%this.chatMessage("\c6Use <Shift Brick Down> \c6to decrease the amount of dirt you place/dig.");
-		%this.chatMessage("Change your paint color to change the color of the dirt you place.");
+		%this.chatMessage("\c6Change your paint color to change the color of the dirt you place.");
 	}
 	else {
 		%this.chatMessage("\c1---- Help Sections ----");
@@ -84,6 +84,7 @@ function servercmdBTTHelp(%this, %section) {
 	}
 }
 
-// Mode changing
+// Default BTTMode functions
+function BTTMode::fire(%this, %client){return;}
 function BTTMode::onStartMode(%this, %client){return;}
 function BTTMode::onStopMode(%this, %client){return;}
