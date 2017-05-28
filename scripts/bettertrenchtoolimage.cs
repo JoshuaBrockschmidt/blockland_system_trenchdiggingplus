@@ -23,11 +23,5 @@ function BetterTrenchToolImage::onPreFire(%this, %obj, %slot)
 }
 
 function BetterTrenchToolImage::onFire(%this, %player, %slot) {
-	if (%player.client.BTT_mode.index == $BTT::ShovelMode) {
-		takeChunk(%player.client, 1); // TODO: implement function for digging multiple bricks
-		%player.client.BTT_updateText();
-	} else if (%player.client.BTT_mode.index == $BTT::PlacerMode) {
-		shootChunk(%player.client); // TODO: implement function for placing multiple bricks
-		%player.client.BTT_updateText();
-	}
+	%player.client.BTT_mode.fire(%player.client);
 }
