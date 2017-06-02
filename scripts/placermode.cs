@@ -78,12 +78,19 @@ function BTT_PlacerMode::fire(%this, %client) {
 			%isBrick = getWord(%args, 6);
 			%brickGroup = getWord(%args, 7);
 			if (%isBrick) {
+				// Check if player has enough bricks for a full cube
+				%numDirt = mPow(%client.BTT_cubeSizeBricks, 3);
+				if (%client.trenchDirt < %numDirt) {
+					%client.centerPrint("\c3You do not have enough dirt for this cube size!", 1);
+					// TODO: instead of restricing player from placing dirt,
+					//       start by placing bricks furthest away as per the %normal
+					return;
+				}
+
 				// Place bricks
 				%displace = vectorScale("0.25 0.25 0.3", %client.BTT_cubeSizeBricks - 1);
 				%cornerPos = vectorSub(%pos, %displace);
 				%numBricks = 0;
-				%cont = 1;
-				// TODO: get normal and begin by placing bricks furthest away
 				for (%z = 0; %z < %client.BTT_cubeSizeBricks * 0.6; %z += 0.6) {
 					for (%x = 0; %x < %client.BTT_cubeSizeBricks * 0.5; %x += 0.5) {
 						for (%y = 0; %y < %client.BTT_cubeSizeBricks * 0.5; %y += 0.5) {
@@ -106,15 +113,9 @@ function BTT_PlacerMode::fire(%this, %client) {
 								%bricks[%numBricks] = %newBrick;
 								%numBricks++;
 								%client.trenchDirt--;
-								if (%client.trenchDirt == 0) {
-									%cont = 0;
-									break;
-								}
 							}
 						}
-						if (!%cont) break;
 					}
-					if (!%cont) break;
 				}
 				for (%i = 0; %i < %numBricks; %i++) {
 					%b = %bricks[%i];
@@ -123,11 +124,19 @@ function BTT_PlacerMode::fire(%this, %client) {
 				}
 			}
 			else {
+				// Check if player has enough bricks for a full cube
+				%numDirt = mPow(%client.BTT_cubeSizeCubes, 3);
+				if (%client.trenchDirt < %numDirt) {
+					%client.centerPrint("\c3You do not have enough dirt for this cube size!", 1);
+					// TODO: instead of restricing player from placing dirt,
+					//       start by placing bricks furthest away as per the %normal
+					return;
+				}
+
 				// Place cubes
 				%displace = vectorScale("0.5 0.5 0.5", %client.BTT_cubeSizeCubes - 1);
 				%cornerPos = vectorSub(%pos, %displace);
 				%numBricks = 0;
-				%cont = 1;
 				// TODO: get normal and begin by placing bricks furthest away
 				for (%x = 0; %x < %client.BTT_cubeSizeCubes; %x++) {
 					for (%y = 0; %y < %client.BTT_cubeSizeCubes; %y++) {
@@ -151,15 +160,9 @@ function BTT_PlacerMode::fire(%this, %client) {
 								%bricks[%numBricks] = %newBrick;
 								%numBricks++;
 								%client.trenchDirt--;
-								if (%client.trenchDirt == 0) {
-									%cont = 0;
-									break;
-								}
 							}
 						}
-						if (!%cont) break;
 					}
-					if (!%cont) break;
 				}
 				for (%i = 0; %i < %numBricks; %i++) {
 					%b = %bricks[%i];
