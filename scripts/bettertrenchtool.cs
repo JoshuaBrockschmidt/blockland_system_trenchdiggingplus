@@ -1,32 +1,32 @@
 package BetterTrenchToolPackage {
 	function GameConnection::onClientEnterGame(%this) {
+		parent::onClientEnterGame(%this);
+
 		%this.BTT_mode = BTT_DisabledMode;
 		%this.BTT_selectedMode = BTT_ShovelMode;
 		%this.BTT_cubeSizeBricks = 1;
 		%this.BTT_cubeSizeCubes = 1;
 		if (!%this.trenchDirt)
 			%this.trenchDirt = 0;
-
-		parent::onClientEnterGame(%this);
 	}
 
 	function GameConnection::onClientLeaveGame(%this) {
 		%this.BTT_setMode(BTT_DisabledMode);
 		%this.BTT_ghostGroup.delete();
 
-		parent::OnClientLeaveGame(%this);
+		parent::onClientLeaveGame(%this);
 	}
 
 	function GameConnection::onDeath(%this, %a, %b, %c, %d) {
-		%this.BTT_setMode(BTT_DisabledMode, 1);
-
 		parent::onDeath(%this, %a, %b, %c, %d);
+
+		%this.BTT_setMode(BTT_DisabledMode, 1);
 	}
 
 	function GameConnection::spawnPlayer(%this) {
-		%this.BTT_setMode(BTT_DisabledMode, 1);
-
 		parent::spawnPlayer(%this);
+
+		%this.BTT_setMode(BTT_DisabledMode, 1);
 	}
 
 	function serverCmdShiftBrick(%client, %x, %y, %z) {
