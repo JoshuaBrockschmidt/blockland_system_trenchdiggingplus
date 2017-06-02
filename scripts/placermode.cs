@@ -73,8 +73,8 @@ function BTT_PlacerMode::fire(%this, %client) {
 	else {
 		%args = BTT_PlacerMode_getGhostPosition(%client);
 		if (%args !$= "") {
-			%pos = getWord(%args, 0) SPC getWord(%args, 1) SPC getWord(%args, 2);
-			%normal = getWord(%args, 3) SPC getWord(%args, 4) SPC getWord(%args, 5);
+			%pos = getWords(%args, 0, 2);
+			%normal = getWords(%args, 3, 5);
 			%isBrick = getWord(%args, 6);
 			%brickGroup = getWord(%args, 7);
 			if (%isBrick) {
