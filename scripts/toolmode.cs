@@ -2,11 +2,6 @@
 // Provides mode indices and mode function declarations.
 ////
 
-// Possible modes
-$BTT::DisabledMode = 0;
-$BTT::ShovelMode   = 1;
-$BTT::PlacerMode   = 2;
-
 //TODO: add $BTT:DragPlacer
 // see BuildAndShoot's or Ace of Spades' drag build game mechanic for reference.
 

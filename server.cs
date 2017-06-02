@@ -22,6 +22,13 @@ if ($BTT::MaxCubeSizeCubes < 1)
 else
 	$BTT::MaxCubeSizeCubes = mFloor($BTT::MaxCubeSizeCubes);
 
+// Other global variables
+
+// Possible tool modes
+$BTT::DisabledMode = 0;
+$BTT::ShovelMode   = 1;
+$BTT::PlacerMode   = 2;
+
 echo("--- Loading Better Trench Tool server scripts ---");
 exec($BTT::ScriptsPath @ "bettertrenchtool.cs");
 exec($BTT::ScriptsPath @ "bettertrenchtoolimage.cs");
