@@ -36,6 +36,122 @@ function BTT_isDirtBrick(%brick) {
 	}
 }
 
+// Checks if two 2D AABB are colliding or touching.
+// AABB is a vector consisting of (x, y, width, height).
+// Returns 1 if the AABBs collide, and 0 if they do not.
+function BTT_AABBAABB(%AABB1, %AABB2) {
+	%x1 = getWord(%AABB1, 0);
+	%y1 = getWord(%AABB1, 1);
+	%w1 = getWord(%AABB1, 2);
+	%h1 = getWord(%AABB1, 3);
+	%x2 = getWord(%AABB2, 0);
+	%y2 = getWord(%AABB2, 1);
+	%w2 = getWord(%AABB2, 2);
+	%h2 = getWord(%AABB2, 3);
+	if (%x1 < %x2 + %w2 &&
+	    %x1 + %w1 > %x2 &&
+	    %y1 < %y2 + %h2 &&
+	    %y1 + %h1 > %y2)
+		return 1;
+	else
+		return 0;
+}
+
+function BTT_takeChunk_reduce(%dbName, %client, %bg, %colorId, %brickPos, %boxPos, %boxDim, %rotAngle) {
+	if (%dbName $= "brick8x16DirtData") {
+		// If a brick of this size is chosen, it must be colliding with the box.
+		// Therefore, we will assume it needs to be split.
+		%isNorth = (mFloor(%rotAngle / 90) + 1) % 2;
+		%displace = %isNorth ? "0 2 0" : "2 0 0";
+		%brickPos1 = vectorAdd(%brickPos, %displace);
+		%brickPos2 = vectorAdd(%brickPos, vectorScale(%displace, -1));
+		BTT_takeChunk_reduce("brick8x8DirtData", %client, %bg, %colorId,
+				     %brickPos1, %boxPos, %boxDim);
+		BTT_takeChunk_reduce("brick8x8DirtData", %client, %bg, %colorId,
+				     %brickPos2, %boxPos, %boxDim);
+	}
+	else if (%dbName $= "brick8x8DirtData" ||
+		 %dbName $= "brick4x4DirtData" ||
+		 %dbName $= "brick2x2DirtData" ||
+		 %dbName $= "brick1x1DirtData") {
+		if (%dbName $= "brick8x8DirtData")
+			%newDbName = "brick4x4DirtData";
+		else if (%dbName $= "brick4x4DirtData")
+			%newDbName = "brick2x2DirtData";
+		else
+			%newDbName = "brick1x1DirtData";
+
+		%displace = vectorScale("0.25 0.25 0.3", %dbName.brickSizeX);
+		%corner = vectorSub(%brickPos, %displace);
+		%brickAABB = getWords(%corner, 0, 1) SPC
+			 0.5 * %dbName.brickSizeX SPC
+			 0.5 * %dbName.brickSizeX;
+		%boxAABB = getWords(%boxPos, 0, 1) SPC getWords(%boxDim, 0, 1);
+		if (BTT_AABBAABB(%brickAABB, %boxAABB)) {
+			if (%dbName !$= "brick1x1DirtData") {
+				%displace1 = vectorScale("0.25 0.25", %newDbName.brickSizeX);
+				%displace2 = vectorScale("-0.25 0.25", %newDbName.brickSizeX);
+				%displace3 = vectorScale("0.25 -0.25", %newDbName.brickSizeX);
+				%displace4 = vectorScale("-0.25 -0.25", %newDbName.brickSizeX);
+				%newPos1 = vectorAdd(%brickPos, %displace1);
+				%newPos2 = vectorAdd(%brickPos, %displace2);
+				%newPos3 = vectorAdd(%brickPos, %displace3);
+				%newPos4 = vectorAdd(%brickPos, %displace4);
+				BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId,
+						     %newPos1, %boxPos, %boxDim);
+				BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId,
+						     %newPos2, %boxPos, %boxDim);
+				BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId,
+						     %newPos3, %boxPos, %boxDim);
+				BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId,
+						     %newPos4, %boxPos, %boxDim);
+			}
+		}
+		else {
+			%newDirt = new fxDTSBrick() {
+				client = %client;
+				colorFxId = 0;
+				colorId = %colorId;
+				datablock = %dbName;
+				position = %brickPos;
+				rotation = "1 0 0 0";
+				shapeFxId = 0;
+			};
+			%newDirt.isPlanted = 1;
+			%newDirt.setTrusted(1);
+			%error = %newDirt.plant();
+			if(%error && %error != 2)
+				%newDirt.delete();
+			else
+				%bg.add(%newDirt);
+		}
+	}
+	// TODO
+}
+
+// TODO: fix player getting stuck in brick (add velocity)
+function BTT_takeChunk(%brick, %boxPos, %boxDim) {
+	%dbName = %brick.getDatablock().getName();
+	%client = %brick.client;
+	%bg = %brick.getGroup();
+	%colorId = %brick.colorId;
+	%brickPos = %brick.position;
+	%rotAngle = getWord(%brick.rotation, 3);
+	// Function presumes collision box intersects brick, so we will delete it.
+	%brick.delete();
+	BTT_takeChunk_reduce(%dbName, %client, %bg, %colorId, %brickPos, %boxPos, %boxDim, %rotAngle);
+}
+
+function BTT_takeChunks(%bricks, %box, %pos, %client) {
+	%boxCorner = vectorSub(%pos, vectorScale(%box, 0.5));
+	%numBricks = getWordCount(%bricks);
+	for (%i = 0; %i < %numBricks; %i++) {
+		%b = getWord(%bricks, %i);
+		%taken = BTT_takeChunk(%b, %boxCorner, %box);
+		%client.trenchDirt += %taken;
+	}
+}
+
 function BTT_refill_findBrick(%pos, %box, %dbName) {
 	initContainerBoxSearch(%pos, %box, $TypeMasks::fxBrickObjectType);
 	%brick = containerSearchNext();

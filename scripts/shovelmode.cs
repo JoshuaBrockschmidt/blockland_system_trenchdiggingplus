@@ -130,48 +130,53 @@ function BTT_ShovelMode_ghostLoop(%client) {
 }
 
 function BTT_ShovelMode::fire(%this, %client) {
-	// DEBUG
-	takeChunk(%client, 1); // TODO: implement function for digging multiple bricks
-	return;
-	// EOF DEBUG
-	// TODO: account for infinite miner
-	if(%client.trenchDirt <= 0 && !%client.isInfiniteMiner) {
-		%client.centerPrint("\c3You have no dirt to release!",1);
-	}
-	else {
-		%args = BTT_ShovelMode_getGhostPosition(%client);
-		if (%args !$= "") {
-			%pos = getWord(%args, 0) SPC getWord(%args, 1) SPC getWord(%args, 2);
-			%isBrick = getWord(%args, 6);
-			if (%isBrick) {
-				%displace = vectorScale("0.25 0.25 0.3", %client.BTT_cubeSizeBricks - 1);
-				%cornerPos = vectorSub(%pos, %displace);
-				initContainerBoxSearch(%pos, %box, $TypeMasks::fxBrickObjectType);
-				%obj = containerSearchNext();
-				if(isObject(%obj)) {
-					return; // DEBUG
-					// TODO: use fxDTSBrickData.brickSizeX (and Y and Z)
-				}
-
-				for (%z = 0; %z < %size * 0.6; %z += 0.6) {
-					for (%x = 0; %x < %limit8x; %x += 4) {
-						for (%y = 0; %y < %limit8x; %y += 4) {
-							%brickPos = vectorAdd(%cornerPos, %x SPC %y SPC %z);
-							initContainerBoxSearch(%pos, %box, $TypeMasks::fxBrickObjectType);
-							%obj = containerSearchNext();
-							if(isObject(%obj))
-								{
-									return %obj;
-								}
-							else
-								{
-									return 0;
-								}
-
-						}
-					}
-				}
+	%args = BTT_ShovelMode_getGhostPosition(%client);
+	if (%args !$= "") {
+		%pos = getWords(%args, 0, 2);
+		%normal = getWords(%args, 3, 5);
+		%isBrick = getWord(%args, 6);
+		%brickGroup = getWord(%args, 7);
+		%isBrick = getWord(%args, 6);
+		if (%isBrick) {
+			// Check if player has enough room to dig a whole cube
+			%numDirt = mPow(%client.BTT_cubeSizeBricks, 3);
+			if (%client.trenchDirt + %numDirt > $TrenchDig::dirtCount) {
+				%client.centerPrint("\c3You do not have enough room for this much dirt!", 1);
+				// TODO: figure out how much dirt the player is going to dig first
+				//       since some shovel actions will collect less than %numDirt
+				//       and potentially more than %numDirt in some odd circumstances
+				// TODO: instead of simply restricing player from digging dirt,
+				//       start by digging bricks closest to player
+				return;
 			}
+
+			// Take chunk(s)
+			%box = vectorScale("0.5 0.5 0.6", %client.BTT_cubeSizeBricks);
+			%box = vectorSub(%box, "0.1 0.1 0.1");
+			initContainerBoxSearch(%pos, %box, $TypeMasks::fxBrickObjectType);
+			while (isObject(%brick = containerSearchNext()))
+				if (%brick.isPlanted && %brick.getDatablock().isTrenchDirt)
+					%bricks = %brick SPC %bricks;
+			%bricks = rtrim(%bricks);
+			BTT_takeChunks(%bricks, %box, %pos, %client);
+			// TODO
+		}
+		else {
+			// Check if player has enough room to dig a whole cube
+			%numDirt = mPow(%client.BTT_cubeSizeCubes, 3);
+			if (%client.trenchDirt + %numDirt > $TrenchDig::dirtCount) {
+				%client.centerPrint("\c3You do not have enough room for this much dirt!", 1);
+				// TODO: figure out how much dirt the player is going to dig first
+				//       since some shovel actions will collect less than %numDirt
+				//       and potentially more than %numDirt in some odd circumstances
+				// TODO: instead of simply restricing player from digging dirt,
+				//       start by digging bricks closest to player
+				return;
+			}
+
+			// Take chunk(s)
+			// TODO
+			return;
 		}
 	}
 	%client.BTT_updateText();

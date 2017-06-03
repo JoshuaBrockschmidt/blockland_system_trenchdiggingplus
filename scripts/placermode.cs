@@ -84,6 +84,8 @@ function BTT_PlacerMode::fire(%this, %client) {
 					%client.centerPrint("\c3You do not have enough dirt for this cube size!", 1);
 					// TODO: instead of restricing player from placing dirt,
 					//       start by placing bricks furthest away as per the %normal
+					// TODO: tally actual number of bricks that will be dug
+					//       before restricting player from digging
 					return;
 				}
 
@@ -130,6 +132,8 @@ function BTT_PlacerMode::fire(%this, %client) {
 					%client.centerPrint("\c3You do not have enough dirt for this cube size!", 1);
 					// TODO: instead of restricing player from placing dirt,
 					//       start by placing bricks furthest away as per the %normal
+					// TODO: tally actual number of bricks that will be dug
+					//       before restricting player from digging
 					return;
 				}
 
