@@ -157,7 +157,7 @@ function BTT_ShovelMode::fire(%this, %client) {
 			while (isObject(%brick = containerSearchNext()))
 				if (%brick.isPlanted && %brick.getDatablock().isTrenchDirt)
 					%bricks = %brick SPC %bricks;
-			%bricks = rtrim(%bricks);
+			%bricks = rTrim(%bricks);
 			BTT_takeChunks(%bricks, %box, %pos, %client);
 			// TODO
 		}
@@ -175,8 +175,15 @@ function BTT_ShovelMode::fire(%this, %client) {
 			}
 
 			// Take chunk(s)
+			%box = vectorScale("1 1 1", %client.BTT_cubeSizeCubes);
+			%box = vectorSub(%box, "0.1 0.1 0.1");
+			initContainerBoxSearch(%pos, %box, $TypeMasks::fxBrickObjectType);
+			while (isObject(%brick = containerSearchNext()))
+				if (%brick.isPlanted && %brick.getDatablock().isTrenchDirt)
+					%bricks = %brick SPC %bricks;
+			%bricks = rTrim(%bricks);
+			BTT_takeChunks(%bricks, %box, %pos, %client);
 			// TODO
-			return;
 		}
 	}
 	%client.BTT_updateText();
