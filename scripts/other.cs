@@ -39,7 +39,7 @@ function BTT_isDirtBrick(%brick) {
 // Checks if two 2D AABB are colliding or touching.
 // AABB is a vector consisting of (x, y, width, height).
 // Returns 1 if the AABBs collide, and 0 if they do not.
-function BTT_AABBAABB(%AABB1, %AABB2) {
+function BTT_AABBAABB_2D(%AABB1, %AABB2) {
 	%x1 = getWord(%AABB1, 0);
 	%y1 = getWord(%AABB1, 1);
 	%w1 = getWord(%AABB1, 2);
@@ -48,6 +48,7 @@ function BTT_AABBAABB(%AABB1, %AABB2) {
 	%y2 = getWord(%AABB2, 1);
 	%w2 = getWord(%AABB2, 2);
 	%h2 = getWord(%AABB2, 3);
+	// TODO: turn AND statement into OR for better efficiency
 	if (%x1 < %x2 + %w2 &&
 	    %x1 + %w1 > %x2 &&
 	    %y1 < %y2 + %h2 &&
@@ -55,6 +56,48 @@ function BTT_AABBAABB(%AABB1, %AABB2) {
 		return 1;
 	else
 		return 0;
+}
+
+// Checks if two cube-shaped AABB are colliding or touching.
+// AABB is a vector consisting of (x, y, z, size x, size y, size z).
+// Returns 1 if the AABBs collide, and 0 if they do not.
+function BTT_AABBAABB_3D(%AABB1, %AABB2) {
+	%x1 = getWord(%AABB1, 0);
+	%y1 = getWord(%AABB1, 1);
+	%z1 = getWord(%AABB1, 2);
+	%sizeX1 = getWord(%AABB1, 3);
+	%sizeY1 = getWord(%AABB1, 4);
+	%sizeZ1 = getWord(%AABB1, 5);
+	%x2 = getWord(%AABB2, 0);
+	%y2 = getWord(%AABB2, 1);
+	%z2 = getWord(%AABB2, 2);
+	%sizeX2 = getWord(%AABB2, 3);
+	%sizeY2 = getWord(%AABB2, 4);
+	%sizeZ2 = getWord(%AABB2, 5);
+	if (%x1 < %x2 + %sizeX2 &&
+	    %x1 + %sizeX1 > %x2 &&
+	    %y1 < %y2 + %sizeY2 &&
+	    %y1 + %sizeY1 > %y2 &&
+	    %z1 < %z2 + %sizeZ2 &&
+	    %z1 + %sizeZ1 > %z2)
+		return 1;
+	else
+		return 0;
+}
+
+function BTT_takeChunk_reduce_split(%newDbName, %client, %bg, %colorId, %brickPos, %boxPos, %boxDim, %shift) {
+	%displace1 = vectorScale("1 1 0", %shift);
+	%displace2 = vectorScale("-1 1 0", %shift);
+	%displace3 = vectorScale("1 -1 0", %shift);
+	%displace4 = vectorScale("-1 -1 0", %shift);
+	%newPos1 = vectorAdd(%brickPos, %displace1);
+	%newPos2 = vectorAdd(%brickPos, %displace2);
+	%newPos3 = vectorAdd(%brickPos, %displace3);
+	%newPos4 = vectorAdd(%brickPos, %displace4);
+	BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId, %newPos1, %boxPos, %boxDim);
+	BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId, %newPos2, %boxPos, %boxDim);
+	BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId, %newPos3, %boxPos, %boxDim);
+	BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId, %newPos4, %boxPos, %boxDim);
 }
 
 function BTT_takeChunk_reduce(%dbName, %client, %bg, %colorId, %brickPos, %boxPos, %boxDim, %rotAngle) {
@@ -87,24 +130,11 @@ function BTT_takeChunk_reduce(%dbName, %client, %bg, %colorId, %brickPos, %boxPo
 			 0.5 * %dbName.brickSizeX SPC
 			 0.5 * %dbName.brickSizeX;
 		%boxAABB = getWords(%boxPos, 0, 1) SPC getWords(%boxDim, 0, 1);
-		if (BTT_AABBAABB(%brickAABB, %boxAABB)) {
+		if (BTT_AABBAABB_2D(%brickAABB, %boxAABB)) {
 			if (%dbName !$= "brick1x1DirtData") {
-				%displace1 = vectorScale("0.25 0.25", %newDbName.brickSizeX);
-				%displace2 = vectorScale("-0.25 0.25", %newDbName.brickSizeX);
-				%displace3 = vectorScale("0.25 -0.25", %newDbName.brickSizeX);
-				%displace4 = vectorScale("-0.25 -0.25", %newDbName.brickSizeX);
-				%newPos1 = vectorAdd(%brickPos, %displace1);
-				%newPos2 = vectorAdd(%brickPos, %displace2);
-				%newPos3 = vectorAdd(%brickPos, %displace3);
-				%newPos4 = vectorAdd(%brickPos, %displace4);
-				BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId,
-						     %newPos1, %boxPos, %boxDim);
-				BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId,
-						     %newPos2, %boxPos, %boxDim);
-				BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId,
-						     %newPos3, %boxPos, %boxDim);
-				BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId,
-						     %newPos4, %boxPos, %boxDim);
+				%shift = 0.25 * %newDbName.brickSizeX;
+				BTT_takeChunk_reduce_split(%newDbName, %client, %bg, %colorId,
+							   %brickPos, %boxPos, %boxDim, %shift);
 			}
 		}
 		else {
@@ -126,7 +156,57 @@ function BTT_takeChunk_reduce(%dbName, %client, %bg, %colorId, %brickPos, %boxPo
 				%bg.add(%newDirt);
 		}
 	}
-	// TODO
+	else if (%dbName $= "brick64xCubeDirtData" ||
+		 %dbName $= "brick32xCubeDirtData" ||
+		 %dbName $= "brick16xCubeDirtData" ||
+		 %dbName $= "brick8xCubeDirtData"  ||
+		 %dbName $= "brick4xCubeDirtData"  ||
+		 %dbName $= "brick2xCubeDirtData") {
+		if (%dbName $= "brick64xCubeDirtData")
+			%newDbName = "brick32xCubeDirtData";
+		else if (%dbNAme $= "brick32xCubeDirtData")
+			%newDbName = "brick16xCubeDirtData";
+		else if (%dbName $= "brick16xCubeDirtData")
+			%newDbName = "brick8xCubeDirtData";
+		else if (%dbName $= "brick8xCubeDirtData")
+			%newDbName = "brick4xCubeDirtData";
+		else
+			%newDbName = "brick2xCubeDirtData";
+		%displace = vectorScale("0.25 0.25 0.25", %dbName.brickSizeX);
+		%corner = vectorSub(%brickPos, %displace);
+		%brickAABB = %corner SPC vectorScale("0.5 0.5 0.5", %dbName.brickSizeX);
+		%boxAABB = %boxPos SPC %boxDim;
+		if (BTT_AABBAABB_3D(%brickAABB, %boxAABB)) {
+			if (%dbName !$= "brick2xCubeDirtData") {
+				%shift = 0.25 * %newDbName.brickSizeX;
+				%displace = "0 0" SPC %shift;
+				%newPos1 = vectorAdd(%brickPos, %displace);
+				%newPos2 = vectorSub(%brickPos, %displace);
+				BTT_takeChunk_reduce_split(%newDbName, %client, %bg, %colorId,
+							   %newPos1, %boxPos, %boxDim, %shift);
+				BTT_takeChunk_reduce_split(%newDbName, %client, %bg, %colorId,
+							   %newPos2, %boxPos, %boxDim, %shift);
+			}
+		}
+		else {
+			%newDirt = new fxDTSBrick() {
+				client = %client;
+				colorFxId = 0;
+				colorId = %colorId;
+				datablock = %dbName;
+				position = %brickPos;
+				rotation = "1 0 0 0";
+				shapeFxId = 0;
+			};
+			%newDirt.isPlanted = 1;
+			%newDirt.setTrusted(1);
+			%error = %newDirt.plant();
+			if(%error && %error != 2)
+				%newDirt.delete();
+			else
+				%bg.add(%newDirt);
+		}
+	}
 }
 
 // TODO: fix player getting stuck in brick (add velocity)
