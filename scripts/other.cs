@@ -85,7 +85,49 @@ function BTT_AABBAABB_3D(%AABB1, %AABB2) {
 		return 0;
 }
 
-function BTT_takeChunk_reduce_split(%newDbName, %client, %bg, %colorId, %brickPos, %boxPos, %boxDim, %shift) {
+function BTT_dummyBrick(%db, %pos) {
+	%this = new ScriptGroup()
+	{
+		class = BTT_dummyBrick;
+	        db = %db;
+		position = %pos;
+	};
+	return %this;
+}
+
+function BTT_dummyBrick::plant(%this, %client, %colorId, %bg) {
+	%newBrick = new fxDTSBrick()
+        {
+		client = %client;
+		colorFxId = 0;
+		colorId = %colorId;
+		datablock = %this.db;
+		position = %this.position;
+		rotation = "1 0 0 0";
+		shapeFxId = 0;
+	};
+	%newBrick.isPlanted = 1;
+	%newBrick.setTrusted(1);
+	%error = %newBrick.plant();
+	if(%error && %error != 2)
+		%newBrick.delete();
+	else
+		%bg.add(%newBrick);
+}
+
+// Object for taking a chunk from a dirt brick.
+function BTT_chunk(%client, %brick) {
+	%this = new ScriptGroup()
+	{
+		class = BTT_chunk;
+		client = %client;
+		brick = %brick;
+		numTake = 0;
+	};
+	return %this;
+}
+
+function BTT_chunk::planFragments_split(%this, %newDbName, %brickPos, %boxPos, %boxDim, %shift) {
 	%displace1 = vectorScale("1 1 0", %shift);
 	%displace2 = vectorScale("-1 1 0", %shift);
 	%displace3 = vectorScale("1 -1 0", %shift);
@@ -94,24 +136,25 @@ function BTT_takeChunk_reduce_split(%newDbName, %client, %bg, %colorId, %brickPo
 	%newPos2 = vectorAdd(%brickPos, %displace2);
 	%newPos3 = vectorAdd(%brickPos, %displace3);
 	%newPos4 = vectorAdd(%brickPos, %displace4);
-	BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId, %newPos1, %boxPos, %boxDim);
-	BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId, %newPos2, %boxPos, %boxDim);
-	BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId, %newPos3, %boxPos, %boxDim);
-	BTT_takeChunk_reduce(%newDbName, %client, %bg, %colorId, %newPos4, %boxPos, %boxDim);
+	%this.planFragments(%newDbName, %newPos1, %boxPos, %boxDim);
+	%this.planFragments(%newDbName, %newPos2, %boxPos, %boxDim);
+	%this.planFragments(%newDbName, %newPos3, %boxPos, %boxDim);
+	%this.planFragments(%newDbName, %newPos4, %boxPos, %boxDim);
 }
 
-function BTT_takeChunk_reduce(%dbName, %client, %bg, %colorId, %brickPos, %boxPos, %boxDim, %rotAngle) {
+// Figures out what bricks should be put in the place of the object's brick
+// and stores them as dummy vectors for later reconstruction.
+function BTT_chunk::planFragments(%this, %dbName, %brickPos, %boxPos, %boxDim) {
 	if (%dbName $= "brick8x16DirtData") {
 		// If a brick of this size is chosen, it must be colliding with the box.
 		// Therefore, we will assume it needs to be split.
+		%rotAngle = getWord(%this.brick.rotation, 3);
 		%isNorth = (mFloor(%rotAngle / 90) + 1) % 2;
 		%displace = %isNorth ? "0 2 0" : "2 0 0";
 		%brickPos1 = vectorAdd(%brickPos, %displace);
 		%brickPos2 = vectorAdd(%brickPos, vectorScale(%displace, -1));
-		BTT_takeChunk_reduce("brick8x8DirtData", %client, %bg, %colorId,
-				     %brickPos1, %boxPos, %boxDim);
-		BTT_takeChunk_reduce("brick8x8DirtData", %client, %bg, %colorId,
-				     %brickPos2, %boxPos, %boxDim);
+		%this.planFragments("brick8x8DirtData", %brickPos1, %boxPos, %boxDim);
+		%this.planFragments("brick8x8DirtData", %brickPos2, %boxPos, %boxDim);
 	}
 	else if (%dbName $= "brick8x8DirtData" ||
 		 %dbName $= "brick4x4DirtData" ||
@@ -131,29 +174,18 @@ function BTT_takeChunk_reduce(%dbName, %client, %bg, %colorId, %brickPos, %boxPo
 			 0.5 * %dbName.brickSizeX;
 		%boxAABB = getWords(%boxPos, 0, 1) SPC getWords(%boxDim, 0, 1);
 		if (BTT_AABBAABB_2D(%brickAABB, %boxAABB)) {
-			if (%dbName !$= "brick1x1DirtData") {
+			if (%dbName $= "brick1x1DirtData") {
+				%this.numTake++;
+			}
+			else {
 				%shift = 0.25 * %newDbName.brickSizeX;
-				BTT_takeChunk_reduce_split(%newDbName, %client, %bg, %colorId,
-							   %brickPos, %boxPos, %boxDim, %shift);
+				%this.planFragments_split(%newDbName, %brickPos,
+							  %boxPos, %boxDim, %shift);
 			}
 		}
 		else {
-			%newDirt = new fxDTSBrick() {
-				client = %client;
-				colorFxId = 0;
-				colorId = %colorId;
-				datablock = %dbName;
-				position = %brickPos;
-				rotation = "1 0 0 0";
-				shapeFxId = 0;
-			};
-			%newDirt.isPlanted = 1;
-			%newDirt.setTrusted(1);
-			%error = %newDirt.plant();
-			if(%error && %error != 2)
-				%newDirt.delete();
-			else
-				%bg.add(%newDirt);
+			%dummy = BTT_dummyBrick(%dbName, %brickPos);
+			%this.add(%dummy);
 		}
 	}
 	else if (%dbName $= "brick64xCubeDirtData" ||
@@ -177,58 +209,87 @@ function BTT_takeChunk_reduce(%dbName, %client, %bg, %colorId, %brickPos, %boxPo
 		%brickAABB = %corner SPC vectorScale("0.5 0.5 0.5", %dbName.brickSizeX);
 		%boxAABB = %boxPos SPC %boxDim;
 		if (BTT_AABBAABB_3D(%brickAABB, %boxAABB)) {
-			if (%dbName !$= "brick2xCubeDirtData") {
+			if (%dbName $= "brick2xCubeDirtData") {
+				%this.numTake++;
+			}
+			else {
 				%shift = 0.25 * %newDbName.brickSizeX;
 				%displace = "0 0" SPC %shift;
-				%newPos1 = vectorAdd(%brickPos, %displace);
-				%newPos2 = vectorSub(%brickPos, %displace);
-				BTT_takeChunk_reduce_split(%newDbName, %client, %bg, %colorId,
-							   %newPos1, %boxPos, %boxDim, %shift);
-				BTT_takeChunk_reduce_split(%newDbName, %client, %bg, %colorId,
-							   %newPos2, %boxPos, %boxDim, %shift);
+				%brickPos1 = vectorAdd(%brickPos, %displace);
+				%brickPos2 = vectorSub(%brickPos, %displace);
+				%this.planFragments_split(%newDbName, %brickPos1,
+							  %boxPos, %boxDim, %shift);
+				%this.planFragments_split(%newDbName, %brickPos2,
+							  %boxPos, %boxDim, %shift);
 			}
 		}
 		else {
-			%newDirt = new fxDTSBrick() {
-				client = %client;
-				colorFxId = 0;
-				colorId = %colorId;
-				datablock = %dbName;
-				position = %brickPos;
-				rotation = "1 0 0 0";
-				shapeFxId = 0;
-			};
-			%newDirt.isPlanted = 1;
-			%newDirt.setTrusted(1);
-			%error = %newDirt.plant();
-			if(%error && %error != 2)
-				%newDirt.delete();
-			else
-				%bg.add(%newDirt);
+			%dummy = BTT_dummyBrick(%dbName, %brickPos);
+			%this.add(%dummy);
 		}
 	}
 }
 
-// TODO: fix player getting stuck in brick (add velocity)
-function BTT_takeChunk(%brick, %boxPos, %boxDim) {
-	%dbName = %brick.getDatablock().getName();
-	%client = %brick.client;
-	%bg = %brick.getGroup();
-	%colorId = %brick.colorId;
-	%brickPos = %brick.position;
-	%rotAngle = getWord(%brick.rotation, 3);
-	// Function presumes collision box intersects brick, so we will delete it.
-	%brick.delete();
-	BTT_takeChunk_reduce(%dbName, %client, %bg, %colorId, %brickPos, %boxPos, %boxDim, %rotAngle);
+// Deletes the old brick and recontructs it according to the dummy vectors
+// created by BTT_chunk::chunk().
+function BTT_chunk::rebuild(%this, %boxPos, %boxDim) {
+	%bg = %this.brick.getGroup();
+	%colorId = %this.brick.colorId;
+	%this.brick.delete();
+	%numDummy = %this.getCount();
+	for (%i = 0; %i < %numDummy; %i++) {
+		%dummy = %this.getObject(%i);
+		%dummy.plant(%client, %colorId, %bg);
+	}
+	for (%i = 0; %i < %numDummy; %i++) {
+		%dummy = %this.getObject(%i);
+		%dummy.delete();
+	}
 }
 
-function BTT_takeChunks(%bricks, %box, %pos, %client) {
-	%boxCorner = vectorSub(%pos, vectorScale(%box, 0.5));
-	%numBricks = getWordCount(%bricks);
-	for (%i = 0; %i < %numBricks; %i++) {
-		%b = getWord(%bricks, %i);
-		%taken = BTT_takeChunk(%b, %boxCorner, %box);
-		%client.trenchDirt += %taken;
+// Holds multiple chunks.
+function BTT_chunker(%client, %brick) {
+	%this = new ScriptGroup()
+        {
+		class = BTT_chunker;
+		client = %client;
+	};
+	return %this;
+}
+
+function BTT_chunker::findChunks(%this, %box, %boxPos) {
+	%this.clear();
+	%boxCorner = vectorSub(%boxPos, vectorScale(%box, 0.5));
+	initContainerBoxSearch(%boxPos, %box, $TypeMasks::fxBrickObjectType);
+	while (isObject(%brick = containerSearchNext())) {
+		if (%brick.isPlanted && %brick.getDatablock().isTrenchDirt) {
+			%newChunk = BTT_chunk(%this.client, %brick);
+			%dbName = %brick.getDatablock().getName();
+			%brickPos = %brick.position;
+			%newChunk.planFragments(%dbName, %brickPos, %boxCorner, %box);
+			%this.add(%newChunk);
+		}
+	}
+}
+
+function BTT_chunker::getTotalTake(%this) {
+	%numChunks = %this.getCount();
+	%totalTake = 0;
+	for (%i = 0; %i < %numChunks; %i++)
+		%totalTake += %this.getObject(%i).numTake;
+	return %totalTake;
+}
+
+// TODO: fix player getting stuck in brick (add velocity)
+function BTT_chunker::take(%this) {
+	%numChunks = %this.getCount();
+	for (%i = 0; %i < %numChunks; %i++) {
+		%chunk = %this.getObject(%i);
+		%chunk.rebuild();
+	}
+	for (%i = 0; %i < %numChunks; %i++) {
+		%chunk = %this.getObject(%i);
+		%chunk.delete();
 	}
 }
 
