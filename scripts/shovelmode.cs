@@ -2,6 +2,8 @@
 // Mode for digging dirt. Allows you to adjust cube size of section of dirt to dig.
 ////
 
+// TODO: change speed of digging based on cube size
+
 BTT_ServerGroup.add(
 	new ScriptObject(BTT_ShovelMode)
 	{
@@ -75,7 +77,7 @@ function BTT_ShovelMode_getGhostPosition(%client) {
 				
 				%pos = vectorAdd(%posXY, 0 SPC 0 SPC %posZ);
 			}
-			%retArgs = %pos SPC %normal SPC %isBrick SPC %dirt.getGroup();
+			%retArgs = %pos SPC %normal SPC %dirt;
 		}
 		else if(BTT_isDirtCube(%dirt)) {
 			%offGridPos = vectorSub(%rayPos,
@@ -88,7 +90,7 @@ function BTT_ShovelMode_getGhostPosition(%client) {
 				%newDisplace = vectorAdd(vectorFloor(%displace),
 							 "0.5 0.5 0.5");
 			%onGridPos = vectorAdd(%dirt.position, %newDisplace);
-			%retArgs = %onGridPos SPC %normal SPC 0 SPC %dirt.getGroup();
+			%retArgs = %onGridPos SPC %normal SPC %dirt;
 		}
 	}
 	return %retArgs;
@@ -101,8 +103,9 @@ function BTT_ShovelMode_ghostLoop(%client) {
 			%client.BTT_ghostGroup.delete();
 		%client.BTT_dirtType = "";
 	} else {
-		%pos = getWord(%args, 0) SPC getWord(%args, 1) SPC getWord(%args, 2);
-		%isBrick = getWord(%args, 6);
+		%pos = getWords(%args, 0, 2);
+		%dirt = getWord(%args, 6);
+		%isBrick = BTT_isDirtBrick(%dirt);
 		if (isObject(%client.BTT_ghostGroup) &&
 		    %client.BTT_ghostGroup.isBrick == %isBrick) {
 			if (%client.BTT_ghostGroup.position !$= %pos)
@@ -110,12 +113,9 @@ function BTT_ShovelMode_ghostLoop(%client) {
 		} else {
 			if (isObject(%client.BTT_ghostGroup))
 				%client.BTT_ghostGroup.delete();
-			%cubeSize = %isBrick ? %client.BTT_cubeSizeBricks: %client.BTT_cubeSizeCubes;
-			%client.BTT_ghostGroup =
-				 BTT_ghostGroup(%client,
-						%cubeSize,
-						%pos,
-						%isBrick);
+			%cubeSize = %isBrick ? %client.BTT_cubeSizeBricks : %client.BTT_cubeSizeCubes;
+			%newGhost = BTT_ghostGroup(%client, %cubeSize, %pos, %isBrick);
+			%client.BTT_ghostGroup = %newGhost;
 		}
 		if (%isBrick)
 			%client.BTT_dirtType = "Brick";
@@ -123,26 +123,22 @@ function BTT_ShovelMode_ghostLoop(%client) {
 			%client.BTT_dirtType = "Cube";
 	}
 	%client.BTT_updateText();
-	%client.BTT_shovelMode_schedID = schedule(100,
-						  0,
-						  BTT_ShovelMode_ghostLoop,
-						  %client);
+	%schedID = schedule(100, 0, BTT_ShovelMode_ghostLoop, %client);
+	%client.BTT_shovelMode_schedID = %schedID;
 }
 
 function BTT_ShovelMode::fire(%this, %client) {
+	if (%client.trenchDirt >= $TrenchDig::dirtCount) {
+		%client.centerPrint("\c3You do not have enough room for any more dirt!", 1);
+		return;
+	}
 	%args = BTT_ShovelMode_getGhostPosition(%client);
 	if (%args !$= "") {
-		if (%client.trenchDirt >= $TrenchDig::dirtCount) {
-			%client.centerPrint("\c3You do not have enough room for any more dirt!", 1);
-			return;
-		}
-
 		// Try to take chunk(s)
 		%pos = getWords(%args, 0, 2);
 		%normal = getWords(%args, 3, 5);
-		%isBrick = getWord(%args, 6);
-		%brickGroup = getWord(%args, 7);
-		%isBrick = getWord(%args, 6);
+		%dirt = getWord(%args, 6);
+		%isBrick = BTT_isDirtBrick(%dirt);
 		%toTake = BTT_chunker(%client);
 		if (%isBrick)
 			%box = vectorScale("0.5 0.5 0.6", %client.BTT_cubeSizeBricks);

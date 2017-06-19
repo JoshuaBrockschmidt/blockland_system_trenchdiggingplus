@@ -17,7 +17,8 @@ function BTT_PlacerMode_getGhostPosition(%client) {
 	if (%args !$= "") {
 		%pos = getWord(%args, 0) SPC getWord(%args, 1) SPC getWord(%args, 2);
 		%normal = getWord(%args, 3) SPC getWord(%args, 4) SPC getWord(%args, 5);
-		%isBrick = getWord(%args, 6);
+		%dirt = getWord(%args, 6);
+		%isBrick = BTT_isDirtBrick(%dirt);
 		if (%isBrick) {
 			%normal2 = vectorScale(%normal, %client.BTT_cubeSizeBricks);
 			%displace = getWord(%normal2, 0) * 0.5
@@ -27,8 +28,7 @@ function BTT_PlacerMode_getGhostPosition(%client) {
 			%displace = vectorScale(%normal, %client.BTT_cubeSizeCubes);
 		}
 		%newPos = vectorAdd(%pos, %displace);
-		%args2 = %newPos SPC %normal SPC %isBrick SPC getWord(%args, 7);
-		// TODO: return brick itself instead of %isBrick and brick group
+		%args2 = %newPos SPC %normal SPC %dirt;
 	}
 	return %args2;
 }
@@ -40,8 +40,9 @@ function BTT_PlacerMode_ghostLoop(%client) {
 			%client.BTT_ghostGroup.delete();
 		%client.BTT_dirtType = "";
 	} else {
-		%pos = getWord(%args, 0) SPC getWord(%args, 1) SPC getWord(%args, 2);
-		%isBrick = getWord(%args, 6);
+		%pos = getWords(%args, 0, 2);
+		%dirt = getWord(%args, 6);
+		%isBrick = BTT_isDirtBrick(%dirt);
 		if (isObject(%client.BTT_ghostGroup) &&
 		    %client.BTT_ghostGroup.isBrick == %isBrick) {
 			if (%client.BTT_ghostGroup.position !$= %pos)
@@ -50,11 +51,8 @@ function BTT_PlacerMode_ghostLoop(%client) {
 			if (isObject(%client.BTT_ghostGroup))
 				%client.BTT_ghostGroup.delete();
 			%cubeSize = %isBrick ? %client.BTT_cubeSizeBricks: %client.BTT_cubeSizeCubes;
-			%client.BTT_ghostGroup =
-				 BTT_ghostGroup(%client,
-						%cubeSize,
-						%pos,
-						%isBrick);
+			%newGhost = BTT_ghostGroup(%client, %cubeSize, %pos, %isBrick);
+			%client.BTT_ghostGroup = %newGhost;
 		}
 		if (%isBrick)
 			%client.BTT_dirtType = "Brick";
@@ -62,10 +60,8 @@ function BTT_PlacerMode_ghostLoop(%client) {
 			%client.BTT_dirtType = "Cube";
 	}
 	%client.BTT_updateText();
-	%client.BTT_placerMode_schedID = schedule(100,
-						  0,
-						  BTT_PlacerMode_ghostLoop,
-						  %client);
+	%schedID = schedule(100, 0, BTT_PlacerMode_ghostLoop, %client);
+	%client.BTT_placerMode_schedID = %schedID;
 }
 
 function BTT_PlacerMode::fire(%this, %client) {
@@ -80,9 +76,9 @@ function BTT_PlacerMode::fire(%this, %client) {
 	if (%args !$= "") {
 		%pos = getWords(%args, 0, 2);
 		%normal = getWords(%args, 3, 5);
-		%isBrick = getWord(%args, 6);
-		%brickGroup = getWord(%args, 7);
-		// TODO
+		%dirt = getWord(%args, 6);
+		%isBrick = BTT_isDirtBrick(%dirt);
+		%brickGroup = %dirt.getGroup();
 		%refiller = BTT_refiller(%client, %pos, %isBrick);
 		%refiller.planPlacing();
 		%numPlace = %refiller.getNumPlace();
@@ -90,116 +86,14 @@ function BTT_PlacerMode::fire(%this, %client) {
 			%client.centerPrint("\c3You cannot place this much dirt!", 1);
 			// TODO: instead of restricting player from placing dirt,
 			//       start by placing bricks furthest away as per the %normal
-			// TODO: tally actual number of bricks that will be dug
-			//       before restricting player from digging
 			return;
 		}
 		else {
 			%colorId = %client.currentColor;
-			%refiller.place(%client, %colorId, %brickGroup); // TODO: get brick's client
+			%refiller.place(%client, %colorId, %brickGroup);
 			%client.trenchDirt -= %numPlace;
 		}
 		%refiller.delete();
-		// TODO
-		if (0) { // COMMENT
-			if (%isBrick) {
-				// Check if player has enough bricks for a full cube
-				%numDirt = mPow(%client.BTT_cubeSizeBricks, 3);
-				if (%client.trenchDirt < %numDirt) {
-					%client.centerPrint("\c3You do not have enough dirt for this cube size!", 1);
-					// TODO: instead of restricting player from placing dirt,
-					//       start by placing bricks furthest away as per the %normal
-					// TODO: tally actual number of bricks that will be dug
-					//       before restricting player from digging
-					return;
-				}
-
-				// Place bricks
-				%displace = vectorScale("0.25 0.25 0.3", %client.BTT_cubeSizeBricks - 1);
-				%cornerPos = vectorSub(%pos, %displace);
-				%numBricks = 0;
-				for (%z = 0; %z < %client.BTT_cubeSizeBricks * 0.6; %z += 0.6) {
-					for (%x = 0; %x < %client.BTT_cubeSizeBricks * 0.5; %x += 0.5) {
-						for (%y = 0; %y < %client.BTT_cubeSizeBricks * 0.5; %y += 0.5) {
-							%brickPos = vectorAdd(%cornerPos, %x SPC %y SPC %z);
-							%newBrick = new fxDtsBrick() {
-								position = %brickPos;
-								datablock = brick1x1DirtData;
-								colorId = %client.currentColor;
-								colorFxId = 0;
-								shapeFxId = 0;
-								client = %client;
-							};
-							%newBrick.isPlanted = 1;
-							%newBrick.setTrusted(1);
-							%error = %newBrick.plant();
-							if(%error && %error != 2) {
-								%newBrick.delete();
-							} else {
-								%brickGroup.add(%newBrick);
-								%bricks[%numBricks] = %newBrick;
-								%numBricks++;
-								%client.trenchDirt--;
-							}
-						}
-					}
-				}
-				for (%i = 0; %i < %numBricks; %i++) {
-					%b = %bricks[%i];
-					if (isObject(%b))
-						BTT_refill(%b);
-				}
-			}
-			else {
-				// Check if player has enough bricks for a full cube
-				%numDirt = mPow(%client.BTT_cubeSizeCubes, 3);
-				if (%client.trenchDirt < %numDirt) {
-					%client.centerPrint("\c3You do not have enough dirt for this cube size!", 1);
-					// TODO: instead of restricting player from placing dirt,
-					//       start by placing bricks furthest away as per the %normal
-					// TODO: tally actual number of bricks that will be dug
-					//       before restricting player from digging
-					return;
-				}
-
-				// Place cubes
-				%displace = vectorScale("0.5 0.5 0.5", %client.BTT_cubeSizeCubes - 1);
-				%cornerPos = vectorSub(%pos, %displace);
-				%numBricks = 0;
-				// TODO: get normal and begin by placing bricks furthest away
-				for (%x = 0; %x < %client.BTT_cubeSizeCubes; %x++) {
-					for (%y = 0; %y < %client.BTT_cubeSizeCubes; %y++) {
-						for (%z = 0; %z < %client.BTT_cubeSizeCubes; %z++) {
-							%brickPos = vectorAdd(%cornerPos, %x SPC %y SPC %z);
-							%newBrick = new fxDtsBrick() {
-								position = %brickPos;
-								datablock = brick2xCubeDirtData;
-								colorId = %client.currentColor;
-								colorFxId = 0;
-								shapeFxId = 0;
-								client = %client;
-							};
-							%newBrick.isPlanted = 1;
-							%newBrick.setTrusted(1);
-							%error = %newBrick.plant();
-							if(%error && %error != 2) {
-								%newBrick.delete();
-							} else {
-								%brickGroup.add(%newBrick);
-								%bricks[%numBricks] = %newBrick;
-								%numBricks++;
-								%client.trenchDirt--;
-							}
-						}
-					}
-				}
-				for (%i = 0; %i < %numBricks; %i++) {
-					%b = %bricks[%i];
-					if (isObject(%b))
-						BTT_refill(%b);
-				}
-			}
-		}
 	}
 	%client.BTT_updateText();
 }
