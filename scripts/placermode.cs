@@ -2,6 +2,8 @@
 // Mode for placing dirt. Allows you to adjust cube size of dirt placed.
 ////
 
+// TODO: change speed of placing based on cube size
+
 BTT_ServerGroup.add(
 	new ScriptObject(BTT_PlacerMode)
 	{
@@ -26,6 +28,7 @@ function BTT_PlacerMode_getGhostPosition(%client) {
 		}
 		%newPos = vectorAdd(%pos, %displace);
 		%args2 = %newPos SPC %normal SPC %isBrick SPC getWord(%args, 7);
+		// TODO: return brick itself instead of %isBrick and brick group
 	}
 	return %args2;
 }
@@ -67,22 +70,44 @@ function BTT_PlacerMode_ghostLoop(%client) {
 
 function BTT_PlacerMode::fire(%this, %client) {
 	// TODO: do not place brick if someone is inside the ghost brick; do not place bricks on players
+	//       $TypeMasks::PlayerObjectType
+	//       $TypeMasks::VehicleObjectType
 	if(%client.trenchDirt <= 0 && !%client.isInfiniteMiner) {
 		%client.centerPrint("\c3You have no dirt to release!", 1);
+		return;
 	}
-	else {
-		%args = BTT_PlacerMode_getGhostPosition(%client);
-		if (%args !$= "") {
-			%pos = getWords(%args, 0, 2);
-			%normal = getWords(%args, 3, 5);
-			%isBrick = getWord(%args, 6);
-			%brickGroup = getWord(%args, 7);
+	%args = BTT_PlacerMode_getGhostPosition(%client);
+	if (%args !$= "") {
+		%pos = getWords(%args, 0, 2);
+		%normal = getWords(%args, 3, 5);
+		%isBrick = getWord(%args, 6);
+		%brickGroup = getWord(%args, 7);
+		// TODO
+		%refiller = BTT_refiller(%client, %pos, %isBrick);
+		%refiller.planPlacing();
+		%numPlace = %refiller.getNumPlace();
+		if (%client.trenchDirt < %numPlace) {
+			%client.centerPrint("\c3You cannot place this much dirt!", 1);
+			// TODO: instead of restricting player from placing dirt,
+			//       start by placing bricks furthest away as per the %normal
+			// TODO: tally actual number of bricks that will be dug
+			//       before restricting player from digging
+			return;
+		}
+		else {
+			%colorId = %client.currentColor;
+			%refiller.place(%client, %colorId, %brickGroup); // TODO: get brick's client
+			%client.trenchDirt -= %numPlace;
+		}
+		%refiller.delete();
+		// TODO
+		if (0) { // COMMENT
 			if (%isBrick) {
 				// Check if player has enough bricks for a full cube
 				%numDirt = mPow(%client.BTT_cubeSizeBricks, 3);
 				if (%client.trenchDirt < %numDirt) {
 					%client.centerPrint("\c3You do not have enough dirt for this cube size!", 1);
-					// TODO: instead of restricing player from placing dirt,
+					// TODO: instead of restricting player from placing dirt,
 					//       start by placing bricks furthest away as per the %normal
 					// TODO: tally actual number of bricks that will be dug
 					//       before restricting player from digging
@@ -130,7 +155,7 @@ function BTT_PlacerMode::fire(%this, %client) {
 				%numDirt = mPow(%client.BTT_cubeSizeCubes, 3);
 				if (%client.trenchDirt < %numDirt) {
 					%client.centerPrint("\c3You do not have enough dirt for this cube size!", 1);
-					// TODO: instead of restricing player from placing dirt,
+					// TODO: instead of restricting player from placing dirt,
 					//       start by placing bricks furthest away as per the %normal
 					// TODO: tally actual number of bricks that will be dug
 					//       before restricting player from digging

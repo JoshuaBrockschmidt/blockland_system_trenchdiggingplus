@@ -95,6 +95,18 @@ function BTT_dummyBrick(%db, %pos) {
 	return %this;
 }
 
+function BTT_dummyBrick::hasRoom(%this) {
+	%box = %this.db.brickSizeX * 0.5 SPC
+		%this.db.brickSizeY * 0.5 SPC
+		%this.db.brickSizeZ * 0.2;
+	%box = vectorSub(%box, "0.1 0.1 0.1");
+	initContainerBoxSearch(%this.position, %box, $TypeMasks::fxBrickObjectType);
+	while(isObject(%brick = containerSearchNext()))
+		if (%brick.isPlanted)
+			return 0;
+	return 1;
+}
+
 function BTT_dummyBrick::plant(%this, %client, %colorId, %bg) {
 	%newBrick = new fxDTSBrick()
         {
@@ -109,10 +121,13 @@ function BTT_dummyBrick::plant(%this, %client, %colorId, %bg) {
 	%newBrick.isPlanted = 1;
 	%newBrick.setTrusted(1);
 	%error = %newBrick.plant();
-	if(%error && %error != 2)
+	if(%error && %error != 2) {
 		%newBrick.delete();
-	else
+	}
+	else {
 		%bg.add(%newBrick);
+		return %newBrick;
+	}
 }
 
 // Object for taking a chunk from a dirt brick.
@@ -152,7 +167,7 @@ function BTT_chunk::planFragments(%this, %dbName, %brickPos, %boxPos, %boxDim) {
 		%isNorth = (mFloor(%rotAngle / 90) + 1) % 2;
 		%displace = %isNorth ? "0 2 0" : "2 0 0";
 		%brickPos1 = vectorAdd(%brickPos, %displace);
-		%brickPos2 = vectorAdd(%brickPos, vectorScale(%displace, -1));
+		%brickPos2 = vectorSub(%brickPos, %displace);
 		%this.planFragments("brick8x8DirtData", %brickPos1, %boxPos, %boxDim);
 		%this.planFragments("brick8x8DirtData", %brickPos2, %boxPos, %boxDim);
 	}
@@ -233,18 +248,16 @@ function BTT_chunk::planFragments(%this, %dbName, %brickPos, %boxPos, %boxDim) {
 // Deletes the old brick and recontructs it according to the dummy vectors
 // created by BTT_chunk::chunk().
 function BTT_chunk::rebuild(%this, %boxPos, %boxDim) {
-	%bg = %this.brick.getGroup();
+	%client = %this.brick.client;
 	%colorId = %this.brick.colorId;
+	%bg = %this.brick.getGroup();
 	%this.brick.delete();
 	%numDummy = %this.getCount();
 	for (%i = 0; %i < %numDummy; %i++) {
 		%dummy = %this.getObject(%i);
 		%dummy.plant(%client, %colorId, %bg);
 	}
-	for (%i = 0; %i < %numDummy; %i++) {
-		%dummy = %this.getObject(%i);
-		%dummy.delete();
-	}
+	%this.deleteAll();
 }
 
 // Holds multiple chunks.
@@ -287,10 +300,71 @@ function BTT_chunker::take(%this) {
 		%chunk = %this.getObject(%i);
 		%chunk.rebuild();
 	}
-	for (%i = 0; %i < %numChunks; %i++) {
-		%chunk = %this.getObject(%i);
-		%chunk.delete();
+	%this.deleteAll();
+}
+
+function BTT_refiller(%client, %pos, %isBrick) {
+	%this = new ScriptGroup()
+        {
+		class = BTT_refiller;
+		client = %client;
+		position = %pos;
+		isBrick = %isBrick;
+	};
+	return %this;
+}
+
+function BTT_refiller::planPlacing(%this) {
+	%this.deleteAll();
+	if (%this.isBrick) {
+		%cubeSize = %this.client.BTT_cubeSizeBricks;
+		%incrX = 0.5;
+		%incrY = 0.5;
+		%incrZ = 0.6;
+		%db = brick1x1DirtData;
 	}
+	else {
+		%cubeSize = %this.client.BTT_cubeSizeCubes;
+		%incrX = 1;
+		%incrY = 1;
+		%incrZ = 1;
+		%db = brick2xCubeDirtData;
+	}
+	%displace = vectorScale(%incrX SPC %incrY SPC %incrZ, 0.5);
+	%displace = vectorScale(%displace, %cubeSize - 1);
+	%cornerPos = vectorSub(%this.position, %displace);
+	%limitX = %cubeSize * %incrX;
+	%limitY = %cubeSize * %incrY;
+	%limitZ = %cubeSize * %incrZ;
+	%numBricks = 0;
+	for (%x = 0; %x < %limitX; %x += %incrX) {
+		for (%y = 0; %y < %limitY; %y += %incrY) {
+			for (%z = 0; %z < %limitZ; %z += %incrZ) {
+				%brickPos = vectorAdd(%cornerPos, %x SPC %y SPC %z);
+				%dummy = BTT_dummyBrick(%db, %brickPos);
+				if (%dummy.hasRoom())
+					%this.add(%dummy);
+				else
+					%dummy.delete();
+			}
+		}
+	}
+}
+
+function BTT_refiller::getNumPlace(%this) {
+	return %this.getCount();
+}
+
+function BTT_refiller::place(%this, %brickClient, %colorId, %bg) {
+	%count = %this.getCount();
+	for (%i = 0; %i < %count; %i++) {
+		%dummy = %this.getObject(%i);
+		%newBricks[%i] = %dummy.plant(%brickClient, %colorId, %bg);
+	}
+	%this.deleteAll();
+	for (%i = 0; %i < %count; %i++)
+		if (isObject(%newBricks[%i]))
+			BTT_refill(%newBricks[%i]);
 }
 
 function BTT_refill_findBrick(%pos, %box, %dbName) {
