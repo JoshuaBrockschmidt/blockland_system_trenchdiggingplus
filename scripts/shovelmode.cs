@@ -147,7 +147,7 @@ function BTT_ShovelMode::fire(%this, %client) {
 		%box = vectorSub(%box, "0.1 0.1 0.1");
 		%toTake.findChunks(%box, %pos);
 		%totalTake = %toTake.getTotalTake();
-		if (%client.trenchDirt + %totalTake > $TrenchDig::dirtCount) {
+		if (%client.trenchDirt + %totalTake > $TrenchDig::dirtCount && !%client.isInfiniteMiner) {
 			%needed = (%client.trenchDirt + %totalTake) - $TrenchDig::dirtCount;
 			%msg = "\c3You do not have enough room for that much dirt!\n" @
 				 "\c3You need" SPC %needed SPC "less dirt.";
@@ -157,7 +157,8 @@ function BTT_ShovelMode::fire(%this, %client) {
 		}
 		else {
 			%toTake.take();
-			%client.trenchDirt += %totalTake;
+			if (!%client.isInfiniteMiner)
+				%client.trenchDirt += %totalTake;
 		}
 		%toTake.delete();
 	}

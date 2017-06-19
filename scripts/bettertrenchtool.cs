@@ -29,6 +29,13 @@ package BetterTrenchToolPackage {
 		%this.BTT_setMode(BTT_DisabledMode, 1);
 	}
 
+	function GameConnection::updateDirt(%this) {
+		if (%this.BTT_mode.index == $BTT::DisabledMode)
+			parent::updateDirt(%this);
+		else
+			BTT_updateText(%this);
+	}
+
 	function serverCmdShiftBrick(%client, %x, %y, %z) {
 		// TODO: Make sure ghost brick is shifted as it changes size.
 		//       Otherwise, a player may be able to dig while the ghost brick is shifting.

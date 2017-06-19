@@ -82,7 +82,7 @@ function BTT_PlacerMode::fire(%this, %client) {
 		%refiller = BTT_refiller(%client, %pos, %isBrick);
 		%refiller.planPlacing();
 		%numPlace = %refiller.getNumPlace();
-		if (%client.trenchDirt < %numPlace) {
+		if (%client.trenchDirt < %numPlace && !%client.isInfiniteMiner) {
 			%client.centerPrint("\c3You cannot place this much dirt!", 1);
 			// TODO: instead of restricting player from placing dirt,
 			//       start by placing bricks furthest away as per the %normal
@@ -91,7 +91,8 @@ function BTT_PlacerMode::fire(%this, %client) {
 		else {
 			%colorId = %client.currentColor;
 			%refiller.place(%client, %colorId, %brickGroup);
-			%client.trenchDirt -= %numPlace;
+			if (!%client.isInfiniteMiner)
+				%client.trenchDirt -= %numPlace;
 		}
 		%refiller.delete();
 	}
