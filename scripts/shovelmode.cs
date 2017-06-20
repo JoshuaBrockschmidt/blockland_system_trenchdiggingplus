@@ -26,9 +26,7 @@ function BTT_ShovelMode_getGhostPosition(%client) {
 			%normalZ = mFloor(getWord(%normal, 2) + 0.5);
 			// If viewing from top or bottom.
 			if (%normalZ != 0) {
-				%posXY = getWord(%rayPos, 0)
-					SPC getWord(%rayPos, 1)
-					SPC 0;
+				%posXY = getWords(%rayPos, 0, 1) SPC 0;
 				if (%client.BTT_cubeSizeBricks % 2 == 1) {
 					%posXY = vectorScale(%posXY, 2);
 					%posXY = vectorFloor(%posXY);
@@ -156,9 +154,13 @@ function BTT_ShovelMode::fire(%this, %client) {
 			//       start by digging bricks closest to player
 		}
 		else {
-			%toTake.take();
-			if (!%client.isInfiniteMiner)
+			%colorIDs = %toTake.take();
+			if (!%client.isInfiniteMiner) {
+				%start = %client.trenchDirt + 1;
 				%client.trenchDirt += %totalTake;
+				for (%i = 0; %i < %totalTake; %i++)
+					%client.trenchBrick[%start + %i] = getWord(%colorIDs, %i);
+			}
 		}
 		%toTake.delete();
 	}

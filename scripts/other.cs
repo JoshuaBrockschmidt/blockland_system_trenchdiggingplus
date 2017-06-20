@@ -251,13 +251,19 @@ function BTT_chunk::rebuild(%this, %boxPos, %boxDim) {
 	%client = %this.brick.client;
 	%colorId = %this.brick.colorId;
 	%bg = %this.brick.getGroup();
-	%this.brick.delete();
 	%numDummy = %this.getCount();
+	%colorID = %this.brick.getColorID();
+	for (%i = 0; %i < %this.numTake; %i++)
+		%colorIDs = %colorIDs SPC %colorID;
+	%colorIDs = trim(%colorIDs);
+	%this.brick.delete();
 	for (%i = 0; %i < %numDummy; %i++) {
 		%dummy = %this.getObject(%i);
 		%dummy.plant(%client, %colorId, %bg);
 	}
 	%this.deleteAll();
+
+	return %colorIDs;
 }
 
 // Holds multiple chunks.
@@ -298,9 +304,13 @@ function BTT_chunker::take(%this) {
 	%numChunks = %this.getCount();
 	for (%i = 0; %i < %numChunks; %i++) {
 		%chunk = %this.getObject(%i);
-		%chunk.rebuild();
+		%newColorIDs = %chunk.rebuild();
+		%colorIDs = %colorIDs SPC %newColorIDs;
 	}
+	%colorIDs = trim(%colorIDs);
 	%this.deleteAll();
+
+	return %colorIDs;
 }
 
 function BTT_refiller(%client, %pos, %isBrick) {
