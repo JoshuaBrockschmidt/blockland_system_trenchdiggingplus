@@ -85,6 +85,10 @@ function BTT_AABBAABB_3D(%AABB1, %AABB2) {
 		return 0;
 }
 
+function BTT_uncorrectVel(%player) {
+	%player.BTT_correctVel = 0;
+}
+
 function BTT_dummyBrick(%db, %pos) {
 	%this = new ScriptGroup()
 	{
@@ -126,6 +130,21 @@ function BTT_dummyBrick::plant(%this, %client, %colorId, %bg) {
 	}
 	else {
 		%bg.add(%newBrick);
+
+		// Make it so player objects do not fall through the new brick(s).
+		%db = %newBrick.getDatablock();
+		%displace = 0 SPC 0 SPC %db.brickSizeZ * 0.1 + 0.05;
+		%pos = vectorAdd(%this.position, %displace);
+		%box = %db.brickSizeX * 0.5 SPC %db.brickSizeY * 0.5 SPC 0.1;
+		initContainerBoxSearch(%pos, %box, $TypeMasks::PlayerObjectType);
+		while(isObject(%player = containerSearchNext())) {
+			if (!%player.BTT_correctVel) {
+				%player.addVelocity("0 0 2");
+				%player.BTT_correctVel = 1;
+				schedule(33, 0, BTT_uncorrectVel, %player);
+			}
+		}
+
 		return %newBrick;
 	}
 }
