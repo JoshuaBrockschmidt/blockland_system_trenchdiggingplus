@@ -2,8 +2,6 @@
 // Mode for placing dirt. Allows you to adjust cube size of dirt placed.
 ////
 
-// TODO: change speed of placing based on cube size
-
 BTT_ServerGroup.add(
 	new ScriptObject(BTT_PlacerMode)
 	{
@@ -53,6 +51,7 @@ function BTT_PlacerMode_ghostLoop(%client) {
 			%cubeSize = %isBrick ? %client.BTT_cubeSizeBricks: %client.BTT_cubeSizeCubes;
 			%newGhost = BTT_ghostGroup(%client, %cubeSize, %pos, %isBrick);
 			%client.BTT_ghostGroup = %newGhost;
+			%client.BTT_updateImage();
 		}
 		if (%isBrick)
 			%client.BTT_dirtType = "Brick";
@@ -78,18 +77,22 @@ function BTT_PlacerMode::fire(%this, %client) {
 		%normal = getWords(%args, 3, 5);
 		%dirt = getWord(%args, 6);
 		%isBrick = BTT_isDirtBrick(%dirt);
-		%brickGroup = %dirt.getGroup();
+
+		// Attempt to place dirt.
 		%refiller = BTT_refiller(%client, %pos, %isBrick);
 		%refiller.planPlacing();
 		%numPlace = %refiller.getNumPlace();
 		if (%client.trenchDirt < %numPlace && !%client.isInfiniteMiner) {
-			%client.centerPrint("\c3You cannot place this much dirt!", 1);
+			%needed = %numPlace - %client.trenchDirt;
+			%msg = "\c3You cannot place this much dirt!\n" @
+				 "\c3You need" SPC %needed SPC "more dirt.";
+			%client.centerPrint(%msg, 2);
 			// TODO: instead of restricting player from placing dirt,
 			//       start by placing bricks furthest away as per the %normal
-			return;
 		}
 		else {
 			%colorId = %client.currentColor;
+			%brickGroup = %dirt.getGroup();
 			%refiller.place(%client, %colorId, %brickGroup);
 			if (!%client.isInfiniteMiner)
 				%client.trenchDirt -= %numPlace;

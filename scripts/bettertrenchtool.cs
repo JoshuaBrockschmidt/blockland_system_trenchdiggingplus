@@ -82,6 +82,7 @@ package BetterTrenchToolPackage {
 				}
 			}
 			%client.BTT_updateText();
+			%client.BTT_updateImage();
 		}
 		else {
 			parent::serverCmdShiftBrick(%client, %x, %y, %z);

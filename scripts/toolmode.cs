@@ -40,6 +40,25 @@ function GameConnection::BTT_setMode(%this, %mode, %noTextUpdate) {
 		%this.BTT_updateText();
 }
 
+function GameConnection::BTT_updateImage(%this) {
+	if (isObject(%this.BTT_ghostGroup)) {
+		%size = %this.BTT_ghostGroup.size;
+		%img = %this.player.getMountedImage(0).getName();
+		%this.BTT_updatingImage = 1;
+		if (%size == 1 && %img !$= BetterTrenchToolImage_1x)
+			%this.player.mountImage(BetterTrenchToolImage_1x);
+		else if (%size == 2 && %img !$= BetterTrenchToolImage_2x)
+			%this.player.mountImage(BetterTrenchToolImage_2x);
+		else if (%size == 3 && %img !$= BetterTrenchToolImage_3x)
+			%this.player.mountImage(BetterTrenchToolImage_3x);
+		else if (%size == 4 && %img !$= BetterTrenchToolImage_4x)
+			%this.player.mountImage(BetterTrenchToolImage_4x);
+		%this.BTT_updatingImage = 0;
+	} else {
+		%this.player.mountImage(BetterTrenchToolImage_1x);
+	}
+}
+
 function servercmdBTTHelp(%this, %section) {
 	%this.chatMessage("\c1==== The Better Trench Tool Guide ====");
 	if (%section == 1) {

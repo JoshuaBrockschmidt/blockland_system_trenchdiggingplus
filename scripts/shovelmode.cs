@@ -2,8 +2,6 @@
 // Mode for digging dirt. Allows you to adjust cube size of section of dirt to dig.
 ////
 
-// TODO: change speed of digging based on cube size
-
 BTT_ServerGroup.add(
 	new ScriptObject(BTT_ShovelMode)
 	{
@@ -44,9 +42,7 @@ function BTT_ShovelMode_getGhostPosition(%client) {
 			}
 			// If viewing from side.
 			else {
-				%posXY = getWord(%rayPos, 0)
-					SPC getWord(%rayPos, 1)
-					SPC 0;
+				%posXY = getWords(%rayPos, 0, 1) SPC 0;
 				%posXY = vectorSub(%posXY,
 						   vectorScale(%normal,
 							       %client.BTT_cubeSizeBricks * 0.25));
@@ -114,6 +110,7 @@ function BTT_ShovelMode_ghostLoop(%client) {
 			%cubeSize = %isBrick ? %client.BTT_cubeSizeBricks : %client.BTT_cubeSizeCubes;
 			%newGhost = BTT_ghostGroup(%client, %cubeSize, %pos, %isBrick);
 			%client.BTT_ghostGroup = %newGhost;
+			%client.BTT_updateImage();
 		}
 		if (%isBrick)
 			%client.BTT_dirtType = "Brick";
