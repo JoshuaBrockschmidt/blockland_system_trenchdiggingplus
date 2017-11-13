@@ -7,7 +7,7 @@ function BetterTrenchToolImage::onMount(%this, %player, %slot) {
 		%player.playThread(2, armReadyRight);
 		%cl = %player.client;
 		%cl.BTT_setMode(%cl.BTT_selectedMode);
-		%player.BTT_updateImage();
+		%cl.BTT_updateImage();
 	}
 }
 
