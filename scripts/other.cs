@@ -48,7 +48,6 @@ function BTT_AABBAABB_2D(%AABB1, %AABB2) {
 	%y2 = getWord(%AABB2, 1);
 	%w2 = getWord(%AABB2, 2);
 	%h2 = getWord(%AABB2, 3);
-	// TODO: turn AND statement into OR for better efficiency
 	if (%x1 > %x2 + %w2 ||
 	    %x1 + %w1 < %x2 ||
 	    %y1 > %y2 + %h2 ||
@@ -80,6 +79,31 @@ function BTT_AABBAABB_3D(%AABB1, %AABB2) {
 	    %y1 + %sizeY1 < %y2 ||
 	    %z1 > %z2 + %sizeZ2 ||
 	    %z1 + %sizeZ1 < %z2)
+		return 0;
+	else
+		return 1;
+}
+
+// Checks if a point lies inside a 3D AABB.
+// The point is just a vector.
+// AABB is a vector consisting of (x, y, z, size x, size y, size z).
+// Returns 1 if the AABBs collide, and 0 if they do not.
+function BTT_PointAABB_3D(%point, %AABB) {
+	%xp = getWord(%point, 0);
+	%yp = getWord(%point, 1);
+	%zp = getWord(%point, 2);
+	%xb = getWord(%AABB, 0);
+	%yb = getWord(%AABB, 1);
+	%zb = getWord(%AABB, 2);
+	%sizeXb = getWord(%AABB, 3);
+	%sizeYb = getWord(%AABB, 4);
+	%sizeZb = getWord(%AABB, 5);
+	if (%xp > %xb + %sizeXb ||
+	    %xp < %xb           ||
+	    %yp > %yb + %sizeYb ||
+	    %yp < %yb           ||
+	    %zp > %zb + %sizeZb ||
+	    %zp < %zb)
 		return 0;
 	else
 		return 1;

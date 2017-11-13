@@ -78,6 +78,31 @@ function BTT_PlacerMode::fire(%this, %client) {
 		%dirt = getWord(%args, 6);
 		%isBrick = BTT_isDirtBrick(%dirt);
 
+		// Check if there is a vehicle or player object in the way.
+		if (%isBrick)
+			%box = vectorScale("0.5 0.5 0.6", %client.BTT_cubeSizeBricks);
+		else
+			%box = vectorScale("1 1 1", %client.BTT_cubeSizeCubes);
+	        %box = vectorSub(%box, "0.1 0.1 0.1");
+		%mask = $TypeMasks::PlayerObjectType | $TypeMasks::VehicleObjectType;
+		%aabb = vectorSub(%pos, vectorScale(%box, 0.5)) SPC %box;
+		initContainerBoxSearch(%pos, %box, %mask);
+		while (isObject(%obj = containerSearchNext())) {
+			// We will only check if a player/vehicle object's
+			// position vector is within the player's cube
+			// selection, since the bounding box of the
+			// player/vehicle object detected by the container
+			// search extends past the object's actual collision
+			// box.
+			%objPos = vectorAdd(%obj.position, "0 0 0.1");
+			if (BTT_PointAABB_3D(%objPos, %aabb)) {
+				%msg = "\c3You cannot place that here!\n" @
+					"\c3There is something in the way.";
+				%client.centerPrint(%msg, 2);
+				return;
+			}
+		}
+
 		// Attempt to place dirt.
 		%refiller = BTT_refiller(%client, %pos, %isBrick);
 		%refiller.planPlacing();
