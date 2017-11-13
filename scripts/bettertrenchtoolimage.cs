@@ -2,7 +2,6 @@
 // Handles equipping and firing of the Better Trench Tool
 ////
 
-// On tool equipped
 function BetterTrenchToolImage::onMount(%this, %player, %slot) {
 	if (!%player.client.BTT_updatingImage) {
 		%player.playThread(2, armReadyRight);
@@ -12,7 +11,6 @@ function BetterTrenchToolImage::onMount(%this, %player, %slot) {
 	}
 }
 
-// On tool unequipped
 function BetterTrenchToolImage::onUnmount(%this, %player, %slot) {
 	if (!%player.client.BTT_updatingImage) {
 		%cl = %player.client;
@@ -22,17 +20,6 @@ function BetterTrenchToolImage::onUnmount(%this, %player, %slot) {
 		%player.playThread(2, root);
 	}
 }
-
-//function BetterTrenchToolImage::onPreFire(%this, %player, %slot)
-//{
-//	%player.playThread(2, armAttack);
-//	%player.schedule(200, %player.playThread, 2, root);
-//}
-
-//function BetterTrenchToolImage::onFire(%this, %player, %slot)
-//{
-//	%player.client.BTT_mode.fire(%player.client);
-//}
 
 function BetterTrenchToolImage_1x::onMount(%this, %player, %slot) {
 	BetterTrenchToolImage::onMount(%this, %player, %slot);
