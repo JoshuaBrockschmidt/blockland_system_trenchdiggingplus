@@ -49,13 +49,13 @@ function BTT_AABBAABB_2D(%AABB1, %AABB2) {
 	%w2 = getWord(%AABB2, 2);
 	%h2 = getWord(%AABB2, 3);
 	// TODO: turn AND statement into OR for better efficiency
-	if (%x1 < %x2 + %w2 &&
-	    %x1 + %w1 > %x2 &&
-	    %y1 < %y2 + %h2 &&
-	    %y1 + %h1 > %y2)
-		return 1;
-	else
+	if (%x1 > %x2 + %w2 ||
+	    %x1 + %w1 < %x2 ||
+	    %y1 > %y2 + %h2 ||
+	    %y1 + %h1 < %y2)
 		return 0;
+	else
+		return 1;
 }
 
 // Checks if two cube-shaped AABB are colliding or touching.
@@ -74,15 +74,15 @@ function BTT_AABBAABB_3D(%AABB1, %AABB2) {
 	%sizeX2 = getWord(%AABB2, 3);
 	%sizeY2 = getWord(%AABB2, 4);
 	%sizeZ2 = getWord(%AABB2, 5);
-	if (%x1 < %x2 + %sizeX2 &&
-	    %x1 + %sizeX1 > %x2 &&
-	    %y1 < %y2 + %sizeY2 &&
-	    %y1 + %sizeY1 > %y2 &&
-	    %z1 < %z2 + %sizeZ2 &&
-	    %z1 + %sizeZ1 > %z2)
-		return 1;
-	else
+	if (%x1 > %x2 + %sizeX2 ||
+	    %x1 + %sizeX1 < %x2 ||
+	    %y1 > %y2 + %sizeY2 ||
+	    %y1 + %sizeY1 < %y2 ||
+	    %z1 > %z2 + %sizeZ2 ||
+	    %z1 + %sizeZ1 < %z2)
 		return 0;
+	else
+		return 1;
 }
 
 function BTT_uncorrectVel(%player) {
