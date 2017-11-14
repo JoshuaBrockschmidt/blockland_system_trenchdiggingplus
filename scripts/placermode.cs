@@ -122,6 +122,10 @@ function BTT_PlacerMode::fire(%this, %client) {
 		%refiller.delete();
 	}
 	%client.BTT_updateText();
+	if (%numplace > 0)
+		return 1;
+	else
+		return 0;
 }
 
 function BTT_PlacerMode::onStartMode(%this, %client) {

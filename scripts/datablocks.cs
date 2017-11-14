@@ -1,5 +1,3 @@
-// TODO: add some particle effects to the tool
-
 %delayMult = 1;
 
 datablock ItemData(BetterTrenchToolItem)
@@ -12,7 +10,6 @@ datablock ItemData(BetterTrenchToolItem)
 	image           = "BetterTrenchToolImage";
 	shapeFile       = "base/data/shapes/brickweapon.dts";
 	uiName          = "Better Trench Tool";
-	iconName        = "base/client/ui/itemIcons/Printer.png";
 };
 
 datablock ShapeBaseImageData(BetterTrenchToolImage)
@@ -23,9 +20,10 @@ datablock ShapeBaseImageData(BetterTrenchToolImage)
 	className = "WeaponImage";
 	item = BetterTrenchToolItem;
 	ammo = " ";
-	projectile = "";
+	projectile = TrenchDirtProjectile;
+	projectileType = Projectile;
 	correctMuzzleVector = false;
-	melee = true;
+	melee = false;
 	doRetraction = false;
 	armReady = true;
 	doColorShift = true;
@@ -39,6 +37,12 @@ datablock ShapeBaseImageData(BetterTrenchToolImage)
 
 datablock ShapeBaseImageData(BetterTrenchToolImage_1x : BetterTrenchToolImage)
 {
+	projectile = TrenchDirtProjectile;
+	projectileType = Projectile;
+	melee = false;
+	doRetraction = false;
+	armReady = true;
+
 	stateName[0]                    = "Activate";
 	stateTransitionOnTimeout[0]     = "Ready";
 	stateTimeoutValue[0]            = 0.5;

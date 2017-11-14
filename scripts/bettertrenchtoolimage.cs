@@ -35,7 +35,9 @@ function BetterTrenchToolImage_1x::onPreFire(%this, %player, %slot) {
 }
 
 function BetterTrenchToolImage_1x::onFire(%this, %player, %slot) {
-	%player.client.BTT_mode.fire(%player.client);
+	%emit = %player.client.BTT_mode.fire(%player.client);
+	if (%emit)
+		Parent::onFire(%this, %player, %slot);
 }
 
 function BetterTrenchToolImage_2x::onMount(%this, %player, %slot) {
@@ -52,7 +54,7 @@ function BetterTrenchToolImage_2x::onPreFire(%this, %player, %slot) {
 
 function BetterTrenchToolImage_2x::onFire(%this, %player, %slot) {
 	%player.playThread(2, spearThrow);
-	%player.client.BTT_mode.fire(%player.client);
+	BetterTrenchToolImage_1x::onFire(%this, %player, %slot);
 }
 
 function BetterTrenchToolImage_3x::onMount(%this, %player, %slot) {
