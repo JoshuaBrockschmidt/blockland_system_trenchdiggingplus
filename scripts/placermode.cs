@@ -64,9 +64,6 @@ function BTT_PlacerMode_ghostLoop(%client) {
 }
 
 function BTT_PlacerMode::fire(%this, %client) {
-	// TODO: do not place brick if someone is inside the ghost brick; do not place bricks on players
-	//       $TypeMasks::PlayerObjectType
-	//       $TypeMasks::VehicleObjectType
 	if(%client.trenchDirt <= 0 && !%client.isInfiniteMiner) {
 		%client.centerPrint("\c3You have no dirt to release!", 1);
 		return;
