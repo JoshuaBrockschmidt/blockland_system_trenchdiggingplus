@@ -55,7 +55,7 @@ datablock ShapeBaseImageData(BetterTrenchToolImage_1x : BetterTrenchToolImage)
 	stateName[2]                    = "PreFire";
 	stateScript[2]                  = "onPreFire";
 	stateTransitionOnTimeout[2]     = "Fire";
-	stateAllowImageChange[2]        = false;
+	stateAllowImageChange[2]        = true;
 	stateTimeoutValue[2]            = 0.1;
 
 	stateName[3]                    = "Fire";
