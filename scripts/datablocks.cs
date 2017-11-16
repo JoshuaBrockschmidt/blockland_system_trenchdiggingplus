@@ -6,7 +6,7 @@ datablock ItemData(BetterTrenchToolItem)
 	category        = "Weapon";
 	className       = "Tool";
 	doColorShift    = true;
-	colorShiftColor = "1 0.84 0 1";
+	colorShiftColor = "1.00 0.84 0.00 1.00";
 	image           = "BetterTrenchToolImage";
 	shapeFile       = "base/data/shapes/brickweapon.dts";
 	uiName          = "Better Trench Tool";
@@ -26,8 +26,6 @@ datablock ShapeBaseImageData(BetterTrenchToolImage)
 	melee = false;
 	doRetraction = false;
 	armReady = true;
-	doColorShift = true;
-	colorShiftColor = BetterTrenchToolItem.colorShiftColor;
 
 	stateName[0]                    = "Activate";
 	stateTransitionOnTimeout[0]     = "Ready";
@@ -35,13 +33,13 @@ datablock ShapeBaseImageData(BetterTrenchToolImage)
 	stateSound[0]                   = weaponSwitchSound;
 };
 
-datablock ShapeBaseImageData(BetterTrenchToolImage_1x : BetterTrenchToolImage)
+datablock ShapeBaseImageData(BetterTrenchToolShovel1xImage : BetterTrenchToolImage)
 {
-	projectile = TrenchDirtProjectile;
-	projectileType = Projectile;
 	melee = false;
 	doRetraction = false;
 	armReady = true;
+	doColorShift = true;
+	colorShiftColor = "0.48 0.56 0.48 1.00";
 
 	stateName[0]                    = "Activate";
 	stateTransitionOnTimeout[0]     = "Ready";
@@ -77,20 +75,39 @@ datablock ShapeBaseImageData(BetterTrenchToolImage_1x : BetterTrenchToolImage)
 	stateWaitForTimeout[5]          = true;
 };
 
-datablock ShapeBaseImageData(BetterTrenchToolImage_2x : BetterTrenchToolImage_1x)
+datablock ShapeBaseImageData(BetterTrenchToolShovel2xImage : BetterTrenchToolShovel1xImage)
 {
 	stateTimeoutValue[2] = 0.1 + %delayMult;
-	item = BetterTrenchToolItem_2x;
 };
 
-datablock ShapeBaseImageData(BetterTrenchToolImage_3x : BetterTrenchToolImage_1x)
+datablock ShapeBaseImageData(BetterTrenchToolShovel3xImage : BetterTrenchToolShovel1xImage)
 {
 	stateTimeoutValue[2] = 0.1 + %delayMult * 2;
-	item = BetterTrenchToolItem_3x;
 };
 
-datablock ShapeBaseImageData(BetterTrenchToolImage_4x : BetterTrenchToolImage_1x)
+datablock ShapeBaseImageData(BetterTrenchToolShovel4xImage : BetterTrenchToolShovel1xImage)
 {
 	stateTimeoutValue[2] = 0.1 + %delayMult * 3;
-	item = BetterTrenchToolItem_4x;
+};
+
+datablock ShapeBaseImageData(BetterTrenchToolPlacer1xImage : BetterTrenchToolShovel1xImage)
+{
+	projectile = TrenchDirtProjectile;
+	projectileType = Projectile;
+	colorShiftColor = "0.55 0.27 0.08 1.00";
+};
+
+datablock ShapeBaseImageData(BetterTrenchToolPlacer2xImage : BetterTrenchToolPlacer1xImage)
+{
+	stateTimeoutValue[2] = 0.1 + %delayMult;
+};
+
+datablock ShapeBaseImageData(BetterTrenchToolPlacer3xImage : BetterTrenchToolPlacer1xImage)
+{
+	stateTimeoutValue[2] = 0.1 + %delayMult * 2;
+};
+
+datablock ShapeBaseImageData(BetterTrenchToolPlacer4xImage : BetterTrenchToolPlacer1xImage)
+{
+	stateTimeoutValue[2] = 0.1 + %delayMult * 3;
 };

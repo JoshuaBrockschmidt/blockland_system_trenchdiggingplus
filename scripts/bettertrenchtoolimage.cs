@@ -21,70 +21,140 @@ function BetterTrenchToolImage::onUnmount(%this, %player, %slot) {
 	}
 }
 
-function BetterTrenchToolImage_1x::onMount(%this, %player, %slot) {
+
+// Shovel mode
+
+function BetterTrenchToolShovel1xImage::onMount(%this, %player, %slot) {
 	BetterTrenchToolImage::onMount(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_1x::onUnmount(%this, %player, %slot) {
+function BetterTrenchToolShovel1xImage::onUnmount(%this, %player, %slot) {
 	BetterTrenchToolImage::onUnmount(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_1x::onPreFire(%this, %player, %slot) {
+function BetterTrenchToolShovel1xImage::onPreFire(%this, %player, %slot) {
 	%player.playThread(2, armAttack);
 	%player.schedule(200, playThread, 2, root);
 }
 
-function BetterTrenchToolImage_1x::onFire(%this, %player, %slot) {
+function BetterTrenchToolShovel1xImage::onFire(%this, %player, %slot) {
 	%emit = %player.client.BTT_mode.fire(%player.client);
 	if (%emit)
 		Parent::onFire(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_2x::onMount(%this, %player, %slot) {
+function BetterTrenchToolShovel2xImage::onMount(%this, %player, %slot) {
 	BetterTrenchToolImage::onMount(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_2x::onUnmount(%this, %player, %slot) {
+function BetterTrenchToolShovel2xImage::onUnmount(%this, %player, %slot) {
 	BetterTrenchToolImage::onUnmount(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_2x::onPreFire(%this, %player, %slot) {
+function BetterTrenchToolShovel2xImage::onPreFire(%this, %player, %slot) {
 	%player.playThread(2, spearReady);
 }
 
-function BetterTrenchToolImage_2x::onFire(%this, %player, %slot) {
+function BetterTrenchToolShovel2xImage::onFire(%this, %player, %slot) {
 	%player.playThread(2, spearThrow);
-	BetterTrenchToolImage_1x::onFire(%this, %player, %slot);
+	BetterTrenchToolShovel1xImage::onFire(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_3x::onMount(%this, %player, %slot) {
+function BetterTrenchToolShovel3xImage::onMount(%this, %player, %slot) {
 	BetterTrenchToolImage::onMount(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_3x::onUnmount(%this, %player, %slot) {
+function BetterTrenchToolShovel3xImage::onUnmount(%this, %player, %slot) {
 	BetterTrenchToolImage::onUnmount(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_3x::onPreFire(%this, %player, %slot) {
-	BetterTrenchToolImage_2x::onPreFire(%this, %player, %slot);
+function BetterTrenchToolShovel3xImage::onPreFire(%this, %player, %slot) {
+	BetterTrenchToolShovel2xImage::onPreFire(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_3x::onFire(%this, %player, %slot) {
-	BetterTrenchToolImage_2x::onFire(%this, %player, %slot);
+function BetterTrenchToolShovel3xImage::onFire(%this, %player, %slot) {
+	BetterTrenchToolShovel2xImage::onFire(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_4x::onMount(%this, %player, %slot) {
+function BetterTrenchToolShovel4xImage::onMount(%this, %player, %slot) {
 	BetterTrenchToolImage::onMount(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_4x::onUnmount(%this, %player, %slot) {
+function BetterTrenchToolShovel4xImage::onUnmount(%this, %player, %slot) {
 	BetterTrenchToolImage::onUnmount(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_4x::onPreFire(%this, %player, %slot) {
-	BetterTrenchToolImage_2x::onPreFire(%this, %player, %slot);
+function BetterTrenchToolShovel4xImage::onPreFire(%this, %player, %slot) {
+	BetterTrenchToolShovel2xImage::onPreFire(%this, %player, %slot);
 }
 
-function BetterTrenchToolImage_4x::onFire(%this, %player, %slot) {
-	BetterTrenchToolImage_2x::onFire(%this, %player, %slot);
+function BetterTrenchToolShovel4xImage::onFire(%this, %player, %slot) {
+	BetterTrenchToolShovel2xImage::onFire(%this, %player, %slot);
+}
+
+
+// Placer mode
+
+function BetterTrenchToolPlacer1xImage::onMount(%this, %player, %slot) {
+	BetterTrenchToolShovel1xImage::onMount(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer1xImage::onUnmount(%this, %player, %slot) {
+	BetterTrenchToolShovel1xImage::onUnmount(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer1xImage::onPreFire(%this, %player, %slot) {
+	BetterTrenchToolShovel1xImage::onPreFire(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer1xImage::onFire(%this, %player, %slot) {
+	BetterTrenchToolShovel1xImage::onFire(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer2xImage::onMount(%this, %player, %slot) {
+	BetterTrenchToolShovel2xImage::onMount(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer2xImage::onUnmount(%this, %player, %slot) {
+	BetterTrenchToolShovel2xImage::onUnmount(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer2xImage::onPreFire(%this, %player, %slot) {
+	BetterTrenchToolShovel2xImage::onPreFire(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer2xImage::onFire(%this, %player, %slot) {
+	BetterTrenchToolShovel2xImage::onFire(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer3xImage::onMount(%this, %player, %slot) {
+	BetterTrenchToolShovel3xImage::onMount(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer3xImage::onUnmount(%this, %player, %slot) {
+	BetterTrenchToolShovel3xImage::onUnmount(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer3xImage::onPreFire(%this, %player, %slot) {
+	BetterTrenchToolShovel3xImage::onPreFire(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer3xImage::onFire(%this, %player, %slot) {
+	BetterTrenchToolShovel3xImage::onFire(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer4xImage::onMount(%this, %player, %slot) {
+	BetterTrenchToolShovel4xImage::onMount(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer4xImage::onUnmount(%this, %player, %slot) {
+	BetterTrenchToolShovel4xImage::onUnmount(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer4xImage::onPreFire(%this, %player, %slot) {
+	BetterTrenchToolShovel4xImage::onPreFire(%this, %player, %slot);
+}
+
+function BetterTrenchToolPlacer4xImage::onFire(%this, %player, %slot) {
+	BetterTrenchToolShovel4xImage::onFire(%this, %player, %slot);
 }

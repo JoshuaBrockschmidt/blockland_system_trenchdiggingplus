@@ -30,6 +30,32 @@ function GameConnection::BTT_updateText(%this) {
 			  @ "<br><just:left>\c6(/\c3BTTHelp\c6 for help)");
 }
 
+function GameConnection::BTT_updateImage(%this) {
+	if (isObject(%this.BTT_ghostGroup))
+		%size = %this.BTT_ghostGroup.size;
+	else if (%this.BTT_dirtType $= "Brick")
+		%size = %this.BTT_cubeSizeBricks;
+	else if (%this.BTT_dirtType $= "Cube")
+		%size = %this.BTT_cubeSizeCubes;
+	else
+		%size = 1;
+
+	%playerImg = %this.player.getMountedImage(0).getName();
+	if (%this.BTT_mode.index == $BTT::ShovelMode)
+		%img = "BetterTrenchToolShovel" @ %size @ "xImage";
+	else if (%this.BTT_mode.index == $BTT::PlacerMode)
+		%img = "BetterTrenchToolPlacer" @ %size @ "xImage";
+	else
+		return;
+
+	if (%playerImg !$= "" && %playerImg !$= %img) {
+		%this.BTT_updatingImage = 1;
+		%this.player.unmountImage();
+		%this.player.mountImage(%img);
+		%this.BTT_updatingImage = 0;
+	}
+}
+
 function GameConnection::BTT_setMode(%this, %mode, %noTextUpdate) {
 	if (%mode.index != %this.BTT_mode.index) {
 		%this.BTT_mode.onStopMode(%this);
@@ -38,33 +64,8 @@ function GameConnection::BTT_setMode(%this, %mode, %noTextUpdate) {
 	}
 	if (!%noTextUpdate)
 		%this.BTT_updateText();
-}
-
-function GameConnection::BTT_updateImage(%this) {
-	if (isObject(%this.BTT_ghostGroup)) {
-		%size = %this.BTT_ghostGroup.size;
-		%img = %this.player.getMountedImage(0).getName();
-		%this.BTT_updatingImage = 1;
-		if (%size == 1 && %img !$= BetterTrenchToolImage_1x) {
-			%this.player.unmountImage();
-			%this.player.mountImage(BetterTrenchToolImage_1x);
-		}
-		else if (%size == 2 && %img !$= BetterTrenchToolImage_2x) {
-			%this.player.unmountImage();
-			%this.player.mountImage(BetterTrenchToolImage_2x);
-		}
-		else if (%size == 3 && %img !$= BetterTrenchToolImage_3x) {
-			%this.player.unmountImage();
-			%this.player.mountImage(BetterTrenchToolImage_3x);
-		}
-		else if (%size == 4 && %img !$= BetterTrenchToolImage_4x) {
-			%this.player.unmountImage();
-			%this.player.mountImage(BetterTrenchToolImage_4x);
-		}
-		%this.BTT_updatingImage = 0;
-	} else {
-		%this.player.mountImage(BetterTrenchToolImage_1x);
-	}
+	if (%mode.index != $BTT::DisabledMode)
+		%this.BTT_updateImage();
 }
 
 function servercmdBTTHelp(%this, %section) {
