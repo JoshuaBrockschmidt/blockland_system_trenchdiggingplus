@@ -56,6 +56,13 @@ function GameConnection::BTT_updateImage(%this) {
 	}
 }
 
+function GameConnection::BTT_getDirtColor(%this, %offset) {
+	if ($BTT::canChooseColor)
+		%colorId = %this.currentColor;
+	else
+		%colorId = %this.trenchBrick[%this.trenchDirt - %offset];
+}
+
 function GameConnection::BTT_setMode(%this, %mode, %noTextUpdate) {
 	if (%mode.index != %this.BTT_mode.index) {
 		%this.BTT_mode.onStopMode(%this);

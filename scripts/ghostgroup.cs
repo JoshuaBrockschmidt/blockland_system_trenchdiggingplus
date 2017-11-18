@@ -8,6 +8,7 @@ function BTT_ghostGroup(%client, %size, %pos, %isBrick) {
 		{
 			class = BTT_ghostGroup;
 			client = %client;
+			colorId = %client.BTT_getDirtColor();
 			numBricks = 0;
 			position = %pos;
 			isBrick = %isBrick;
@@ -15,6 +16,15 @@ function BTT_ghostGroup(%client, %size, %pos, %isBrick) {
 	%this.setSize(%size);
         BTT_ServerGroup.add(%this);
 	return %this;
+}
+
+function BTT_ghostGroup::updateColor(%this) {
+	%clColorId = %this.client.BTT_getDirtColor();
+	if (%this.colorId != %clColorId) {
+		%this.colorId = %clColorId;
+		for (%i = 0; %i < %this.numBricks; %i++)
+			%this.bricks[%i].setColor(%this.colorId);
+	}
 }
 
 function BTT_ghostGroup::getBasePos_bricks(%this) {
@@ -51,7 +61,7 @@ function BTT_ghostGroup::setSize(%this, %size) {
 					%newPos = vectorAdd(%basePos, %displace);
 					%this.bricks[%this.numBricks] = new fxDTSBrick() {
 						datablock = "brick8x8DirtData";
-						colorID = %this.client.currentColor;
+						colorID = %this.colorId;
 						colorFxID = 0;
 						shapeFxID = 0;
 						isPlanted = 0;
@@ -68,7 +78,7 @@ function BTT_ghostGroup::setSize(%this, %size) {
 						%newPos = vectorAdd(%basePos, %displace);
 						%this.bricks[%this.numBricks] = new fxDTSBrick() {
 							datablock = "brick4x4DirtData";
-							colorID = %this.client.currentColor;
+							colorID = %this.colorId;
 							colorFxID = 0;
 							shapeFxID = 0;
 							isPlanted = 0;
@@ -86,7 +96,7 @@ function BTT_ghostGroup::setSize(%this, %size) {
 						%newPos = vectorAdd(%basePos, %displace);
 						%this.bricks[%this.numBricks] = new fxDTSBrick() {
 							datablock = "brick2x2DirtData";
-							colorID = %this.client.currentColor;
+							colorID = %this.colorId;
 							colorFxID = 0;
 							shapeFxID = 0;
 							isPlanted = 0;
@@ -104,7 +114,7 @@ function BTT_ghostGroup::setSize(%this, %size) {
 						%newPos = vectorAdd(%basePos, %displace);
 						%this.bricks[%this.numBricks] = new fxDTSBrick() {
 							datablock = "brick1x1DirtData";
-							colorID = %this.client.currentColor;
+							colorID = %this.colorId;
 							colorFxID = 0;
 							shapeFxID = 0;
 							isPlanted = 0;
@@ -127,7 +137,7 @@ function BTT_ghostGroup::setSize(%this, %size) {
 					%newPos = vectorAdd(%basePos, %displace);
 					%this.bricks[%this.numBricks] = new fxDTSBrick() {
 						datablock = "brick8xCubeDirtData";
-						colorID = %this.client.currentColor;
+						colorID = %this.colorId;
 						colorFxID = 0;
 						shapeFxID = 0;
 						isPlanted = 0;
@@ -147,7 +157,7 @@ function BTT_ghostGroup::setSize(%this, %size) {
 						%newPos = vectorAdd(%basePos, %displace);
 						%this.bricks[%this.numBricks] = new fxDTSBrick() {
 							datablock = "brick4xCubeDirtData";
-							colorID = %this.client.currentColor;
+							colorID = %this.colorId;
 							colorFxID = 0;
 							shapeFxID = 0;
 							isPlanted = 0;
@@ -167,7 +177,7 @@ function BTT_ghostGroup::setSize(%this, %size) {
 						%newPos = vectorAdd(%basePos, %displace);
 						%this.bricks[%this.numBricks] = new fxDTSBrick() {
 							datablock = "brick2xCubeDirtData";
-							colorID = %this.client.currentColor;
+							colorID = %this.colorId;
 							colorFxID = 0;
 							shapeFxID = 0;
 							isPlanted = 0;
@@ -180,11 +190,6 @@ function BTT_ghostGroup::setSize(%this, %size) {
 			}
 		}
 	}
-}
-
-function BTT_ghostGroup::updateColor(%this) {
-	for (%i = 0; %i < %this.numBricks; %i++)
-		%this.bricks[%i].setColor(%this.client.currentColor);
 }
 
 function BTT_ghostGroup::deleteBricks(%this) {

@@ -117,6 +117,8 @@ function BTT_ShovelMode_ghostLoop(%client) {
 		else
 			%client.BTT_dirtType = "Cube";
 	}
+	if (isObject(%client.BTT_ghostGroup))
+	        %client.BTT_ghostGroup.updateColor();
 	%client.BTT_updateText();
 	%schedID = schedule(100, 0, BTT_ShovelMode_ghostLoop, %client);
 	%client.BTT_shovelMode_schedID = %schedID;

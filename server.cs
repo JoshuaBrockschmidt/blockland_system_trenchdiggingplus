@@ -10,24 +10,13 @@ if(isObject(BTT_ServerGroup))
 	BTT_ServerGroup.delete();
 new ScriptGroup(BTT_ServerGroup);
 
-echo("--- Loading Better Trench Tool config ---");
-exec($BTT::FilePath @ "config.cs");
-// Validate config and modify if necessary
-if ($BTT::MaxCubeSizeBricks < 1)
-	$BTT::MaxCubeSizeBricks = 1;
-else
-	$BTT::MaxCubeSizeBricks = mFloor($BTT::MaxCubeSizeBricks);
-if ($BTT::MaxCubeSizeCubes < 1)
-	$BTT::MaxCubeSizeCubes = 1;
-else
-	$BTT::MaxCubeSizeCubes = mFloor($BTT::MaxCubeSizeCubes);
-
-// Other global variables
-
 // Possible tool modes
 $BTT::DisabledMode = 0;
 $BTT::ShovelMode   = 1;
 $BTT::PlacerMode   = 2;
+
+echo("--- Loading Better Trench Tool preferences ---");
+exec($BTT::ScriptsPath @ "prefs.cs");
 
 echo("--- Loading Better Trench Tool server scripts ---");
 exec($BTT::ScriptsPath @ "bettertrenchtool.cs");

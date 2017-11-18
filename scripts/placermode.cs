@@ -58,6 +58,8 @@ function BTT_PlacerMode_ghostLoop(%client) {
 		else
 			%client.BTT_dirtType = "Cube";
 	}
+	if (isObject(%client.BTT_ghostGroup))
+	        %client.BTT_ghostGroup.updateColor();
 	%client.BTT_updateText();
 	%schedID = schedule(100, 0, BTT_PlacerMode_ghostLoop, %client);
 	%client.BTT_placerMode_schedID = %schedID;
@@ -113,9 +115,8 @@ function BTT_PlacerMode::fire(%this, %client) {
 			//       start by placing bricks furthest away as per the %normal
 		}
 		else {
-			%colorId = %client.currentColor;
 			%brickGroup = %dirt.getGroup();
-			%refiller.place(%client, %colorId, %brickGroup);
+			%refiller.place(%client, %brickGroup);
 			if (!%client.isInfiniteMiner)
 				%client.trenchDirt -= %numPlace;
 		}
