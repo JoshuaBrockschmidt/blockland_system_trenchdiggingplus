@@ -33,7 +33,7 @@ package BetterTrenchToolPackage {
 		if (%this.BTT_mode.index == $BTT::DisabledMode)
 			parent::updateDirt(%this);
 		else
-			BTT_updateText(%this);
+			%this.BTT_updateText();
 	}
 
 	function serverCmdShiftBrick(%client, %x, %y, %z) {
