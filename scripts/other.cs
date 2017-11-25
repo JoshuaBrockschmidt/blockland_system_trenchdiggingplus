@@ -368,15 +368,14 @@ function BTT_refiller(%client, %pos, %isBrick) {
 
 function BTT_refiller::planPlacing(%this) {
 	%this.deleteAll();
+	%cubeSize = %this.client.BTT_cubeSize;
 	if (%this.isBrick) {
-		%cubeSize = %this.client.BTT_cubeSizeBricks;
 		%incrX = 0.5;
 		%incrY = 0.5;
 		%incrZ = 0.6;
 		%db = brick1x1DirtData;
 	}
 	else {
-		%cubeSize = %this.client.BTT_cubeSizeCubes;
 		%incrX = 1;
 		%incrY = 1;
 		%incrZ = 1;
