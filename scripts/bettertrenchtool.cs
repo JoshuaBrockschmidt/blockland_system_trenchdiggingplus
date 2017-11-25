@@ -95,4 +95,12 @@ package BetterTrenchToolPackage {
 			parent::serverCmdLight(%client);
 		}
 	}
+
+	function serverCmdDropTool(%client, %slot) {
+		%item = %client.player.tool[%slot].getName();
+		if (%item $= "BetterTrenchToolItem" && %client.player.currTool == %slot)
+			%client.player.unMountImage();
+
+		parent::serverCmdDropTool(%client, %slot);
+	}
 };
