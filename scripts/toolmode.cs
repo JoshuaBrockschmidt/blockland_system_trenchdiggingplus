@@ -46,7 +46,9 @@ function GameConnection::BTT_updateImage(%this) {
 }
 
 function GameConnection::BTT_getDirtColor(%this, %offset) {
-	if ($BTT::canChooseColor)
+	if ($BTT::colorIsDefault)
+		%colorId = $BTT::defaultColor;
+	else if ($BTT::canChooseColor)
 		%colorId = %this.currentColor;
 	else
 		%colorId = %this.trenchBrick[%this.trenchDirt - %offset];
