@@ -411,7 +411,6 @@ function BTT_refiller::place(%this, %brickClient, %bg) {
 	%count = %this.getCount();
 	for (%i = 0; %i < %count; %i++) {
 		%colorId = %brickClient.BTT_getDirtColor(%i);
-		announce(%brickclient.name @ ":" SPC %colorId);
 		%dummy = %this.getObject(%i);
 		%newBricks[%i] = %dummy.plant(%brickClient, %colorId, %bg);
 	}

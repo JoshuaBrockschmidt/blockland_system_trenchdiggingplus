@@ -16,10 +16,7 @@ BTT_ServerGroup.add(
 // See shovelmode.cs and placermode.cs for other modes.
 
 function GameConnection::BTT_updateText(%this) {
-	if (%this.BTT_dirtType $= "Brick")
-		%cubeSize = "\c6Cube Size:\c3" SPC %this.BTT_cubeSizeBricks;
-	else if (%this.BTT_dirtType $= "Cube")
-		%cubeSize = "\c6Cube Size:\c3" SPC %this.BTT_cubeSizeCubes;
+	%cubeSize = "\c6Cube Size:\c3" SPC %this.BTT_cubeSize;
 
 	%this.bottomPrint("<just:left>\c6" @ %this.BTT_mode.name
 			  @ "<just:center>" @ %cubeSize
@@ -31,15 +28,7 @@ function GameConnection::BTT_updateText(%this) {
 }
 
 function GameConnection::BTT_updateImage(%this) {
-	if (isObject(%this.BTT_ghostGroup))
-		%size = %this.BTT_ghostGroup.size;
-	else if (%this.BTT_dirtType $= "Brick")
-		%size = %this.BTT_cubeSizeBricks;
-	else if (%this.BTT_dirtType $= "Cube")
-		%size = %this.BTT_cubeSizeCubes;
-	else
-		%size = 1;
-
+	%size = %this.BTT_cubeSize;
 	%playerImg = %this.player.getMountedImage(0).getName();
 	if (%this.BTT_mode.index == $BTT::ShovelMode)
 		%img = "BetterTrenchToolShovel" @ %size @ "xImage";

@@ -17,13 +17,11 @@ function BTT_PlacerMode_getGhostPosition(%client) {
 		%normal = getWord(%args, 3) SPC getWord(%args, 4) SPC getWord(%args, 5);
 		%dirt = getWord(%args, 6);
 		%isBrick = BTT_isDirtBrick(%dirt);
+		%displace = vectorScale(%normal, %client.BTT_cubeSize);
 		if (%isBrick) {
-			%normal2 = vectorScale(%normal, %client.BTT_cubeSizeBricks);
-			%displace = getWord(%normal2, 0) * 0.5
-				 SPC getWord(%normal2, 1) * 0.5
-				 SPC getWord(%normal2, 2) * 0.6;
-		} else {
-			%displace = vectorScale(%normal, %client.BTT_cubeSizeCubes);
+			%displace = getWord(%displace, 0) * 0.5
+				 SPC getWord(%displace, 1) * 0.5
+				 SPC getWord(%displace, 2) * 0.6;
 		}
 		%newPos = vectorAdd(%pos, %displace);
 		%args2 = %newPos SPC %normal SPC %dirt;
@@ -48,8 +46,7 @@ function BTT_PlacerMode_ghostLoop(%client) {
 		} else {
 			if (isObject(%client.BTT_ghostGroup))
 				%client.BTT_ghostGroup.delete();
-			%cubeSize = %isBrick ? %client.BTT_cubeSizeBricks: %client.BTT_cubeSizeCubes;
-			%newGhost = BTT_ghostGroup(%client, %cubeSize, %pos, %isBrick);
+			%newGhost = BTT_ghostGroup(%client, %client.BTT_cubeSize, %pos, %isBrick);
 			%client.BTT_ghostGroup = %newGhost;
 			%client.BTT_updateImage();
 		}
@@ -79,10 +76,10 @@ function BTT_PlacerMode::fire(%this, %client) {
 
 		// Check if there is a vehicle or player object in the way.
 		if (%isBrick)
-			%box = vectorScale("0.5 0.5 0.6", %client.BTT_cubeSizeBricks);
+			%box = vectorScale("0.5 0.5 0.6", %client.BTT_cubeSize);
 		else
-			%box = vectorScale("1 1 1", %client.BTT_cubeSizeCubes);
-	        %box = vectorSub(%box, "0.1 0.1 0.1");
+			%box = vectorScale("1 1 1", %client.BTT_cubeSize);
+	    %box = vectorSub(%box, "0.1 0.1 0.1");
 		%mask = $TypeMasks::PlayerObjectType | $TypeMasks::VehicleObjectType;
 		%aabb = vectorSub(%pos, vectorScale(%box, 0.5)) SPC %box;
 		initContainerBoxSearch(%pos, %box, %mask);

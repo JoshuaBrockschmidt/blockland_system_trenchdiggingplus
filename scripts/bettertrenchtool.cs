@@ -4,8 +4,7 @@ package BetterTrenchToolPackage {
 
 		%this.BTT_mode = BTT_DisabledMode;
 		%this.BTT_selectedMode = BTT_ShovelMode;
-		%this.BTT_cubeSizeBricks = 1;
-		%this.BTT_cubeSizeCubes = 1;
+		%this.BTT_cubeSize = 1;
 		if (!%this.trenchDirt)
 			%this.trenchDirt = 0;
 	}
@@ -39,47 +38,21 @@ package BetterTrenchToolPackage {
 	function serverCmdShiftBrick(%client, %x, %y, %z) {
 		// TODO: Make sure ghost brick is shifted as it changes size.
 		//       Otherwise, a player may be able to dig while the ghost brick is shifting.
-		if (%client.BTT_mode.index) {
-			if (%client.BTT_ghostGroup.numBricks > 0) {
-				%firstBrick = %client.BTT_ghostGroup.bricks[0];
-				if (BTT_isDirtBrick(%firstBrick)) {
-					if (%z > 0) {
-						%client.BTT_cubeSizeBricks++;
-						if (%client.BTT_cubeSizeBricks >
-						    $BTT::MaxCubeSizeBricks)
-							%client.BTT_cubeSizeBricks =
-								 $BTT::MaxCubeSizeBricks;
-						else
-							%client.player.playthread(2, shiftUp);
-						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSizeBricks);
-					} else if (%z < 0) {
-						%client.BTT_cubeSizeBricks--;
-						if (%client.BTT_cubeSizeBricks < 1)
-							%client.BTT_cubeSizeBricks = 1;
-						else
-							%client.player.playthread(2, shiftDown);
-						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSizeBricks);
-					}
-				}
-				else if (BTT_isDirtCube(%firstBrick)) {
-					if (%z > 0) {
-						%client.BTT_cubeSizeCubes++;
-						if (%client.BTT_cubeSizeCubes >
-						    $BTT::MaxCubeSizeCubes)
-							%client.BTT_cubeSizeCubes =
-								 $BTT::MaxCubeSizeCubes;
-						else
-							%client.player.playthread(2, shiftUp);
-						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSizeCubes);
-					} else if (%z < 0) {
-						%client.BTT_cubeSizeCubes--;
-						if (%client.BTT_cubeSizeCubes < 1)
-							%client.BTT_cubeSizeCubes = 1;
-						else
-							%client.player.playthread(2, shiftDown);
-						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSizeCubes);
-					}
-				}
+		if (%client.BTT_mode.index != $BTT::DisabledMode) {
+			if (%z > 0) {
+				%client.BTT_cubeSize++;
+				if (%client.BTT_cubeSize > $BTT::MaxCubeSize)
+					%client.BTT_cubeSize = $BTT::MaxCubeSize;
+				else
+					%client.player.playthread(2, shiftUp);
+				%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
+			} else if (%z < 0) {
+				%client.BTT_cubeSize--;
+				if (%client.BTT_cubeSize < 1)
+					%client.BTT_cubeSize = 1;
+				else
+					%client.player.playthread(2, shiftDown);
+				%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
 			}
 			%client.BTT_updateText();
 			%client.BTT_updateImage();
@@ -90,33 +63,15 @@ package BetterTrenchToolPackage {
 	}
 
 	function serverCmdSuperShiftBrick(%client, %x, %y, %z) {
-		if (%client.BTT_mode.index > 0) {
-			if (%client.BTT_ghostGroup.numBricks > 0) {
-				%firstBrick = %client.BTT_ghostGroup.bricks[0];
-				if (BTT_isDirtBrick(%firstBrick)) {
-					if (%z > 0) {
-						%client.BTT_cubeSizeBricks =
-							$BTT::MaxCubeSizeBricks;
-						%client.player.playthread(2, shiftUp);
-						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSizeCubes);
-					} else if (%z < 0) {
-						%client.BTT_cubeSizeBricks = 1;
-						%client.player.playthread(2, shiftDown);
-						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSizeCubes);
-					}
-				}
-				else if (BTT_isDirtCube(%firstBrick)) {
-					if (%z > 0) {
-						%client.BTT_cubeSizeCubes =
-							 $BTT::MaxCubeSizeCubes;
-						%client.player.playthread(2, shiftUp);
-						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSizeCubes);
-					} else if (%z < 0) {
-						%client.BTT_cubeSizeCubes = 1;
-						%client.player.playthread(2, shiftDown);
-						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSizeCubes);
-					}
-				}
+		if (%client.BTT_mode.index != $BTT::DisabledMode) {
+			if (%z > 0) {
+				%client.BTT_cubeSize = $BTT::MaxCubeSize;
+				%client.player.playthread(2, shiftUp);
+				%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
+			} else if (%z < 0) {
+				%client.BTT_cubeSize = 1;
+				%client.player.playthread(2, shiftDown);
+				%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
 			}
 			%client.BTT_updateText();
 			%client.BTT_updateImage();

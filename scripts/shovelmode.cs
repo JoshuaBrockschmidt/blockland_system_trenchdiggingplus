@@ -25,7 +25,7 @@ function BTT_ShovelMode_getGhostPosition(%client) {
 			// If viewing from top or bottom.
 			if (%normalZ != 0) {
 				%posXY = getWords(%rayPos, 0, 1) SPC 0;
-				if (%client.BTT_cubeSizeBricks % 2 == 1) {
+				if (%client.BTT_cubeSize % 2 == 1) {
 					%posXY = vectorScale(%posXY, 2);
 					%posXY = vectorFloor(%posXY);
 					%posXY = vectorAdd(%posXY, "0.5 0.5 0");
@@ -36,18 +36,15 @@ function BTT_ShovelMode_getGhostPosition(%client) {
 					%posXY = vectorFloor(%posXY);
 					%posXY = vectorScale(%posXY, 0.5);
 				}
-				%posZ = getWord(%dirt.position, 2)
-					 - %normalZ * 0.3 * (%client.BTT_cubeSizeBricks - 1);
+				%posZ = getWord(%dirt.position, 2) - %normalZ * 0.3 * (%client.BTT_cubeSize - 1);
 				%pos = vectorAdd(%posXY, 0 SPC 0 SPC %posZ);
 			}
 			// If viewing from side.
 			else {
 				%posXY = getWords(%rayPos, 0, 1) SPC 0;
-				%posXY = vectorSub(%posXY,
-						   vectorScale(%normal,
-							       %client.BTT_cubeSizeBricks * 0.25));
+				%posXY = vectorSub(%posXY, vectorScale(%normal, %client.BTT_cubeSize * 0.25));
 				%posZ = getWord(%rayPos, 2);
-				if (%client.BTT_cubeSizeBricks % 2 == 1) {
+				if (%client.BTT_cubeSize % 2 == 1) {
 					%posXY = vectorScale(%posXY, 2);
 					%posXY = vectorFloor(%posXY);
 					%posXY = vectorAdd(%posXY, "0.5 0.5 0");
@@ -76,9 +73,9 @@ function BTT_ShovelMode_getGhostPosition(%client) {
 		else if(BTT_isDirtCube(%dirt)) {
 			%offGridPos = vectorSub(%rayPos,
 						vectorScale(%normal,
-							    %client.BTT_cubeSizeCubes / 2));
+							    %client.BTT_cubeSize / 2));
 			%displace = vectorSub(%offGridPos, %dirt.position);
-			if (((%dirt.getDatablock().brickSizeX+%client.BTT_cubeSizeCubes*2-2) % 4) / 2)
+			if (((%dirt.getDatablock().brickSizeX+%client.BTT_cubeSize*2-2) % 4) / 2)
 				%newDisplace = vectorFloor(vectorAdd(%displace, "0.5 0.5 0.5"));
 			else
 				%newDisplace = vectorAdd(vectorFloor(%displace),
@@ -107,8 +104,7 @@ function BTT_ShovelMode_ghostLoop(%client) {
 		} else {
 			if (isObject(%client.BTT_ghostGroup))
 				%client.BTT_ghostGroup.delete();
-			%cubeSize = %isBrick ? %client.BTT_cubeSizeBricks : %client.BTT_cubeSizeCubes;
-			%newGhost = BTT_ghostGroup(%client, %cubeSize, %pos, %isBrick);
+			%newGhost = BTT_ghostGroup(%client, %client.BTT_cubeSize, %pos, %isBrick);
 			%client.BTT_ghostGroup = %newGhost;
 			%client.BTT_updateImage();
 		}
@@ -138,9 +134,9 @@ function BTT_ShovelMode::fire(%this, %client) {
 		%isBrick = BTT_isDirtBrick(%dirt);
 		%toTake = BTT_chunker(%client);
 		if (%isBrick)
-			%box = vectorScale("0.5 0.5 0.6", %client.BTT_cubeSizeBricks);
+			%box = vectorScale("0.5 0.5 0.6", %client.BTT_cubeSize);
 		else
-			%box = vectorScale("1 1 1", %client.BTT_cubeSizeCubes);
+			%box = vectorScale("1 1 1", %client.BTT_cubeSize);
 		%box = vectorSub(%box, "0.1 0.1 0.1");
 		%toTake.findChunks(%box, %pos);
 		%totalTake = %toTake.getTotalTake();
