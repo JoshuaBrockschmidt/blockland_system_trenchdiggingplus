@@ -27,24 +27,6 @@ function GameConnection::BTT_updateText(%this) {
 			  @ "<br><just:left>\c6(/\c3BTTHelp\c6 for help)");
 }
 
-function GameConnection::BTT_updateImage(%this) {
-	%size = %this.BTT_cubeSize;
-	%playerImg = %this.player.getMountedImage(0).getName();
-	if (%this.BTT_mode.index == $BTT::ShovelMode)
-		%img = "BetterTrenchToolShovel" @ %size @ "xImage";
-	else if (%this.BTT_mode.index == $BTT::PlacerMode)
-		%img = "BetterTrenchToolPlacer" @ %size @ "xImage";
-	else
-		return;
-
-	if (%playerImg !$= "" && %playerImg !$= %img) {
-		%this.BTT_updatingImage = 1;
-		%this.player.unmountImage();
-		%this.player.mountImage(%img);
-		%this.BTT_updatingImage = 0;
-	}
-}
-
 function GameConnection::BTT_getDirtColor(%this, %offset) {
 	if ($BTT::colorIsDefault)
 		%colorId = $BTT::defaultColor;
@@ -60,10 +42,19 @@ function GameConnection::BTT_setMode(%this, %mode, %noTextUpdate) {
 		%mode.onStartMode(%this);
 		%this.BTT_mode = %mode;
 	}
+
+	// Update text
 	if (!%noTextUpdate)
 		%this.BTT_updateText();
-	if (%mode.index != $BTT::DisabledMode)
-		%this.BTT_updateImage();
+
+	// Set image
+	%playerImg = %this.player.getMountedImage(0).getName();
+	if (%playerImg !$= %mode.image) {
+		%this.BTT_updatingImage = 1;
+		%this.player.unmountImage(0);
+		%this.player.mountImage(%mode.image, 0);
+		%this.BTT_updatingImage = 0;
+	}
 }
 
 function serverCmdBTTHelp(%this, %section) {

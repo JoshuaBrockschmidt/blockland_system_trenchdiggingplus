@@ -8,6 +8,7 @@ BTT_ServerGroup.add(
 		class = "BTTMode";
 		index = $BTT::ShovelMode;
 		name  = "Shovel Mode";
+		image = BetterTrenchToolShovelImage;
 	});
 
 function BTT_ShovelMode_getGhostPosition(%client) {
@@ -106,7 +107,6 @@ function BTT_ShovelMode_ghostLoop(%client) {
 				%client.BTT_ghostGroup.delete();
 			%newGhost = BTT_ghostGroup(%client, %client.BTT_cubeSize, %pos, %isBrick);
 			%client.BTT_ghostGroup = %newGhost;
-			%client.BTT_updateImage();
 		}
 		if (%isBrick)
 			%client.BTT_dirtType = "Brick";

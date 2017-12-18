@@ -8,6 +8,7 @@ BTT_ServerGroup.add(
 		class = "BTTMode";
 		index = $BTT::PlacerMode;
 		name  = "Placer Mode";
+		image = BetterTrenchToolPlacerImage;
 	});
 
 function BTT_PlacerMode_getGhostPosition(%client) {
@@ -48,7 +49,6 @@ function BTT_PlacerMode_ghostLoop(%client) {
 				%client.BTT_ghostGroup.delete();
 			%newGhost = BTT_ghostGroup(%client, %client.BTT_cubeSize, %pos, %isBrick);
 			%client.BTT_ghostGroup = %newGhost;
-			%client.BTT_updateImage();
 		}
 		if (%isBrick)
 			%client.BTT_dirtType = "Brick";

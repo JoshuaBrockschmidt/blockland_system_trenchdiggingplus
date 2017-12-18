@@ -39,23 +39,26 @@ package BetterTrenchToolPackage {
 		// TODO: Make sure ghost brick is shifted as it changes size.
 		//       Otherwise, a player may be able to dig while the ghost brick is shifting.
 		if (%client.BTT_mode.index != $BTT::DisabledMode) {
-			if (%z > 0) {
-				%client.BTT_cubeSize++;
-				if (%client.BTT_cubeSize > $BTT::MaxCubeSize)
-					%client.BTT_cubeSize = $BTT::MaxCubeSize;
-				else
-					%client.player.playthread(2, shiftUp);
-				%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
-			} else if (%z < 0) {
-				%client.BTT_cubeSize--;
-				if (%client.BTT_cubeSize < 1)
-					%client.BTT_cubeSize = 1;
-				else
-					%client.player.playthread(2, shiftDown);
-				%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
+			if (!%client.BTT_isFiring) {
+				if (%z > 0) {
+					%client.BTT_cubeSize++;
+					if (%client.BTT_cubeSize > $BTT::MaxCubeSize)
+						%client.BTT_cubeSize = $BTT::MaxCubeSize;
+					else
+						%client.player.playthread(2, shiftUp);
+					if (isObject(%client.BTT_ghostGroup))
+						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
+				} else if (%z < 0) {
+					%client.BTT_cubeSize--;
+					if (%client.BTT_cubeSize < 1)
+						%client.BTT_cubeSize = 1;
+					else
+						%client.player.playthread(2, shiftDown);
+					if (isObject(%client.BTT_ghostGroup))
+						%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
+				}
+				%client.BTT_updateText();
 			}
-			%client.BTT_updateText();
-			%client.BTT_updateImage();
 		}
 		else {
 			parent::serverCmdShiftBrick(%client, %x, %y, %z);
@@ -64,17 +67,18 @@ package BetterTrenchToolPackage {
 
 	function serverCmdSuperShiftBrick(%client, %x, %y, %z) {
 		if (%client.BTT_mode.index != $BTT::DisabledMode) {
-			if (%z > 0) {
-				%client.BTT_cubeSize = $BTT::MaxCubeSize;
-				%client.player.playthread(2, shiftUp);
-				%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
-			} else if (%z < 0) {
-				%client.BTT_cubeSize = 1;
-				%client.player.playthread(2, shiftDown);
-				%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
+			if (!%client.BTT_isFiring) {
+				if (%z > 0) {
+					%client.BTT_cubeSize = $BTT::MaxCubeSize;
+					%client.player.playthread(2, shiftUp);
+					%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
+				} else if (%z < 0) {
+					%client.BTT_cubeSize = 1;
+					%client.player.playthread(2, shiftDown);
+					%client.BTT_ghostGroup.setSize(%client.BTT_cubeSize);
+				}
+				%client.BTT_updateText();
 			}
-			%client.BTT_updateText();
-			%client.BTT_updateImage();
 		}
 		else {
 			parent::serverCmdSuperShiftBrick(%client, %x, %y, %z);
