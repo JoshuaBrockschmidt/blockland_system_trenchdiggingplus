@@ -10,11 +10,6 @@ if(isObject(BTT_ServerGroup))
 	BTT_ServerGroup.delete();
 new ScriptGroup(BTT_ServerGroup);
 
-// Possible tool modes
-$BTT::DisabledMode = 0;
-$BTT::ShovelMode   = 1;
-$BTT::PlacerMode   = 2;
-
 echo("--- Loading Better Trench Tool preferences ---");
 exec($BTT::ScriptsPath @ "prefs.cs");
 

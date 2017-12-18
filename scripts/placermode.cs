@@ -6,7 +6,6 @@ BTT_ServerGroup.add(
 	new ScriptObject(BTT_PlacerMode)
 	{
 		class = "BTTMode";
-		index = $BTT::PlacerMode;
 		name  = "Placer Mode";
 		image = BetterTrenchToolPlacerImage;
 	});
@@ -35,7 +34,6 @@ function BTT_PlacerMode_ghostLoop(%client) {
 	if (%args $= "") {
 		if (isObject(%client.BTT_ghostGroup))
 			%client.BTT_ghostGroup.delete();
-		%client.BTT_dirtType = "";
 	} else {
 		%pos = getWords(%args, 0, 2);
 		%dirt = getWord(%args, 6);
@@ -50,10 +48,6 @@ function BTT_PlacerMode_ghostLoop(%client) {
 			%newGhost = BTT_ghostGroup(%client, %client.BTT_cubeSize, %pos, %isBrick);
 			%client.BTT_ghostGroup = %newGhost;
 		}
-		if (%isBrick)
-			%client.BTT_dirtType = "Brick";
-		else
-			%client.BTT_dirtType = "Cube";
 	}
 	if (isObject(%client.BTT_ghostGroup))
 	        %client.BTT_ghostGroup.updateColor();

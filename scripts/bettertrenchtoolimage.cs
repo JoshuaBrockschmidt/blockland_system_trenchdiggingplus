@@ -15,8 +15,6 @@ function BetterTrenchToolImage::onUnmount(%this, %player, %slot) {
 	cancel(%this.BTT_preFireSched);
 	if (!%cl.BTT_updatingImage) {
 		%cl.BTT_setMode(BTT_DisabledMode);
-		// TODO: remove dirtType; obsolete
-		%cl.BTT_dirtType = "";
 		clearBottomPrint(%cl);
 		%player.playThread(2, root);
 	}

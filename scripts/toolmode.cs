@@ -9,7 +9,6 @@ BTT_ServerGroup.add(
 	new ScriptObject(BTT_DisabledMode)
 	{
 		class = "BTTMode";
-		index = $BTT::DisabledMode;
 		name  = "Disabled Mode";
 	});
 
@@ -37,7 +36,7 @@ function GameConnection::BTT_getDirtColor(%this, %offset) {
 }
 
 function GameConnection::BTT_setMode(%this, %mode, %noTextUpdate) {
-	if (%mode.index != %this.BTT_mode.index) {
+	if (%mode.getName() !$= %this.BTT_mode.getName()) {
 		%this.BTT_mode.onStopMode(%this);
 		%mode.onStartMode(%this);
 		%this.BTT_mode = %mode;
@@ -50,6 +49,7 @@ function GameConnection::BTT_setMode(%this, %mode, %noTextUpdate) {
 	// Set image
 	%playerImg = %this.player.getMountedImage(0).getName();
 	if (%playerImg !$= %mode.image) {
+		announce("set mode:" SPC %mode.image);
 		%this.BTT_updatingImage = 1;
 		%this.player.unmountImage(0);
 		%this.player.mountImage(%mode.image, 0);

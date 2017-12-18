@@ -29,7 +29,7 @@ package BetterTrenchToolPackage {
 	}
 
 	function GameConnection::updateDirt(%this) {
-		if (%this.BTT_mode.index == $BTT::DisabledMode)
+		if (%this.BTT_mode.getName() $= BTT_DisabledMode)
 			parent::updateDirt(%this);
 		else
 			%this.BTT_updateText();
@@ -38,7 +38,7 @@ package BetterTrenchToolPackage {
 	function serverCmdShiftBrick(%client, %x, %y, %z) {
 		// TODO: Make sure ghost brick is shifted as it changes size.
 		//       Otherwise, a player may be able to dig while the ghost brick is shifting.
-		if (%client.BTT_mode.index != $BTT::DisabledMode) {
+		if (%client.BTT_mode.getName() !$= BTT_DisabledMode) {
 			if (!%client.BTT_isFiring) {
 				if (%z > 0) {
 					%client.BTT_cubeSize++;
@@ -66,7 +66,7 @@ package BetterTrenchToolPackage {
 	}
 
 	function serverCmdSuperShiftBrick(%client, %x, %y, %z) {
-		if (%client.BTT_mode.index != $BTT::DisabledMode) {
+		if (%client.BTT_mode.getName() !$= BTT_DisabledMode) {
 			if (!%client.BTT_isFiring) {
 				if (%z > 0) {
 					%client.BTT_cubeSize = $BTT::MaxCubeSize;
@@ -86,11 +86,12 @@ package BetterTrenchToolPackage {
 	}
 
 	function serverCmdLight(%client) {
-		if (%client.BTT_mode.index != $BTT:DisabledMode) {
-			if (%client.BTT_mode.index == $BTT::ShovelMode) {
+		%mode = %client.BTT_mode.getName();
+		if (%mode !$= BTT_DisabledMode) {
+			if (%mode $= BTT_ShovelMode) {
 				%client.BTT_setMode(BTT_PlacerMode);
 				%client.BTT_selectedMode = BTT_PlacerMode;
-			} else if (%client.BTT_mode.index == $BTT::PlacerMode) {
+			} else if (%mode $= BTT_PlacerMode) {
 				%client.BTT_setMode(BTT_ShovelMode);
 				%client.BTT_selectedMode = BTT_ShovelMode;
 			}
