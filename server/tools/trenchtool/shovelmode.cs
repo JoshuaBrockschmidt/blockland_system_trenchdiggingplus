@@ -2,30 +2,30 @@
 // Mode for digging dirt. Allows you to adjust cube size of section of dirt to dig.
 ////
 
-BTT_ServerGroup.add(
-	new ScriptObject(BTT_ShovelMode)
+TRT_ServerGroup.add(
+	new ScriptObject(TRT_ShovelMode)
 	{
-		class = "BTTMode";
+		class = "TRTMode";
 		name  = "Shovel Mode";
-		image = BetterTrenchToolShovelImage;
+		image = TrenchToolShovelImage;
 	});
 
-function BTT_ShovelMode_getGhostPosition(%client) {
+function TRT_ShovelMode_getGhostPosition(%client) {
 	%eyePoint = %client.player.getEyePoint();
 	%eyeVector = %client.player.getEyeVector();
-	%pos = vectorAdd(%eyePoint, vectorscale(%eyeVector, $BTT::toolRange));
+	%pos = vectorAdd(%eyePoint, vectorscale(%eyeVector, $TRT::toolRange));
 	%ray = containerRayCast(%eyePoint, %pos, $TypeMasks::FxBrickObjectType);
 	%dirt = firstWord(%ray);
 	%normal = normalFromRayCast(%ray);
 	if(isObject(%dirt) && %dirt.getDatablock().isTrenchDirt) {
 		%rayPos = posFromRayCast(%ray);
-		%isBrick = BTT_isDirtBrick(%dirt);
+		%isBrick = TRT_isDirtBrick(%dirt);
 		if (%isBrick) {
 			%normalZ = mFloor(getWord(%normal, 2) + 0.5);
 			// If viewing from top or bottom.
 			if (%normalZ != 0) {
 				%posXY = getWords(%rayPos, 0, 1) SPC 0;
-				if (%client.BTT_cubeSize % 2 == 1) {
+				if (%client.TRT_cubeSize % 2 == 1) {
 					%posXY = vectorScale(%posXY, 2);
 					%posXY = vectorFloor(%posXY);
 					%posXY = vectorAdd(%posXY, "0.5 0.5 0");
@@ -36,15 +36,15 @@ function BTT_ShovelMode_getGhostPosition(%client) {
 					%posXY = vectorFloor(%posXY);
 					%posXY = vectorScale(%posXY, 0.5);
 				}
-				%posZ = getWord(%dirt.position, 2) - %normalZ * 0.3 * (%client.BTT_cubeSize - 1);
+				%posZ = getWord(%dirt.position, 2) - %normalZ * 0.3 * (%client.TRT_cubeSize - 1);
 				%pos = vectorAdd(%posXY, 0 SPC 0 SPC %posZ);
 			}
 			// If viewing from side.
 			else {
 				%posXY = getWords(%rayPos, 0, 1) SPC 0;
-				%posXY = vectorSub(%posXY, vectorScale(%normal, %client.BTT_cubeSize * 0.25));
+				%posXY = vectorSub(%posXY, vectorScale(%normal, %client.TRT_cubeSize * 0.25));
 				%posZ = getWord(%rayPos, 2);
-				if (%client.BTT_cubeSize % 2 == 1) {
+				if (%client.TRT_cubeSize % 2 == 1) {
 					%posXY = vectorScale(%posXY, 2);
 					%posXY = vectorFloor(%posXY);
 					%posXY = vectorAdd(%posXY, "0.5 0.5 0");
@@ -70,12 +70,12 @@ function BTT_ShovelMode_getGhostPosition(%client) {
 			}
 			%retArgs = %pos SPC %normal SPC %dirt;
 		}
-		else if(BTT_isDirtCube(%dirt)) {
+		else if(TRT_isDirtCube(%dirt)) {
 			%offGridPos = vectorSub(%rayPos,
 						vectorScale(%normal,
-							    %client.BTT_cubeSize / 2));
+							    %client.TRT_cubeSize / 2));
 			%displace = vectorSub(%offGridPos, %dirt.position);
-			if (((%dirt.getDatablock().brickSizeX+%client.BTT_cubeSize*2-2) % 4) / 2)
+			if (((%dirt.getDatablock().brickSizeX+%client.TRT_cubeSize*2-2) % 4) / 2)
 				%newDisplace = vectorFloor(vectorAdd(%displace, "0.5 0.5 0.5"));
 			else
 				%newDisplace = vectorAdd(vectorFloor(%displace),
@@ -87,50 +87,50 @@ function BTT_ShovelMode_getGhostPosition(%client) {
 	return %retArgs;
 }
 
-function BTT_ShovelMode_ghostLoop(%client) {
-	%args = BTT_ShovelMode_getGhostPosition(%client);
+function TRT_ShovelMode_ghostLoop(%client) {
+	%args = TRT_ShovelMode_getGhostPosition(%client);
 	if (%args $= "") {
-		if (isObject(%client.BTT_ghostGroup))
-			%client.BTT_ghostGroup.delete();
+		if (isObject(%client.TRT_ghostGroup))
+			%client.TRT_ghostGroup.delete();
 	} else {
 		%pos = getWords(%args, 0, 2);
 		%dirt = getWord(%args, 6);
-		%isBrick = BTT_isDirtBrick(%dirt);
-		if (isObject(%client.BTT_ghostGroup) &&
-		    %client.BTT_ghostGroup.isBrick == %isBrick) {
-			if (%client.BTT_ghostGroup.position !$= %pos)
-				%client.BTT_ghostGroup.setTransform(%pos);
+		%isBrick = TRT_isDirtBrick(%dirt);
+		if (isObject(%client.TRT_ghostGroup) &&
+		    %client.TRT_ghostGroup.isBrick == %isBrick) {
+			if (%client.TRT_ghostGroup.position !$= %pos)
+				%client.TRT_ghostGroup.setTransform(%pos);
 		} else {
-			if (isObject(%client.BTT_ghostGroup))
-				%client.BTT_ghostGroup.delete();
-			%newGhost = BTT_ghostGroup(%client, %client.BTT_cubeSize, %pos, %isBrick);
-			%client.BTT_ghostGroup = %newGhost;
+			if (isObject(%client.TRT_ghostGroup))
+				%client.TRT_ghostGroup.delete();
+			%newGhost = TRT_ghostGroup(%client, %client.TRT_cubeSize, %pos, %isBrick);
+			%client.TRT_ghostGroup = %newGhost;
 		}
 	}
-	if (isObject(%client.BTT_ghostGroup))
-	        %client.BTT_ghostGroup.updateColor();
-	%client.BTT_updateText();
-	%schedID = schedule(100, 0, BTT_ShovelMode_ghostLoop, %client);
-	%client.BTT_shovelMode_schedID = %schedID;
+	if (isObject(%client.TRT_ghostGroup))
+	        %client.TRT_ghostGroup.updateColor();
+	%client.TRT_updateText();
+	%schedID = schedule(100, 0, TRT_ShovelMode_ghostLoop, %client);
+	%client.TRT_shovelMode_schedID = %schedID;
 }
 
-function BTT_ShovelMode::fire(%this, %client) {
+function TRT_ShovelMode::fire(%this, %client) {
 	if (%client.trenchDirt >= $TrenchDig::dirtCount) {
 		%client.centerPrint("\c3You do not have enough room for any more dirt!", 1);
 		return;
 	}
-	%args = BTT_ShovelMode_getGhostPosition(%client);
+	%args = TRT_ShovelMode_getGhostPosition(%client);
 	if (%args !$= "") {
 		// Try to take chunk(s)
 		%pos = getWords(%args, 0, 2);
 		%normal = getWords(%args, 3, 5);
 		%dirt = getWord(%args, 6);
-		%isBrick = BTT_isDirtBrick(%dirt);
-		%toTake = BTT_chunker(%client);
+		%isBrick = TRT_isDirtBrick(%dirt);
+		%toTake = TRT_chunker(%client);
 		if (%isBrick)
-			%box = vectorScale("0.5 0.5 0.6", %client.BTT_cubeSize);
+			%box = vectorScale("0.5 0.5 0.6", %client.TRT_cubeSize);
 		else
-			%box = vectorScale("1 1 1", %client.BTT_cubeSize);
+			%box = vectorScale("1 1 1", %client.TRT_cubeSize);
 		%box = vectorSub(%box, "0.1 0.1 0.1");
 		%toTake.findChunks(%box, %pos);
 		%totalTake = %toTake.getTotalTake();
@@ -153,15 +153,15 @@ function BTT_ShovelMode::fire(%this, %client) {
 		}
 		%toTake.delete();
 	}
-	%client.BTT_updateText();
+	%client.TRT_updateText();
 }
 
-function BTT_ShovelMode::onStartMode(%this, %client) {
-	BTT_ShovelMode_ghostLoop(%client);
+function TRT_ShovelMode::onStartMode(%this, %client) {
+	TRT_ShovelMode_ghostLoop(%client);
 }
 
-function BTT_ShovelMode::onStopMode(%this, %client) {
-	cancel(%client.BTT_shovelMode_schedID);
-	if (isObject(%client.BTT_ghostGroup))
-		%client.BTT_ghostGroup.delete();
+function TRT_ShovelMode::onStopMode(%this, %client) {
+	cancel(%client.TRT_shovelMode_schedID);
+	if (isObject(%client.TRT_ghostGroup))
+		%client.TRT_ghostGroup.delete();
 }

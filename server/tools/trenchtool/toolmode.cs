@@ -2,70 +2,69 @@
 // Provides mode indices and mode function declarations.
 ////
 
-//TODO: add $BTT:DragPlacer
-// see BuildAndShoot's or Ace of Spades' drag build game mechanic for reference.
+// TODO: add drag placing
+//  * see BuildAndShoot's or Ace of Spades' drag build game mechanic for reference.
 
-BTT_ServerGroup.add(
-	new ScriptObject(BTT_DisabledMode)
+TRT_ServerGroup.add(
+	new ScriptObject(TRT_DisabledMode)
 	{
-		class = "BTTMode";
+		class = "TRTMode";
 		name  = "Disabled Mode";
 	});
 
 // See shovelmode.cs and placermode.cs for other modes.
 
-function GameConnection::BTT_updateText(%this) {
-	%cubeSize = "\c6Cube Size:\c3" SPC %this.BTT_cubeSize;
+function GameConnection::TRT_updateText(%this) {
+	%cubeSize = "\c6Cube Size:\c3" SPC %this.TRT_cubeSize;
 
-	%this.bottomPrint("<just:left>\c6" @ %this.BTT_mode.name
+	%this.bottomPrint("<just:left>\c6" @ %this.TRT_mode.name
 			  @ "<just:center>" @ %cubeSize
 			  @ "            "
 			  @ "<just:right>\c3" @ %this.trenchDirt
 			  @ "\c6/\c3" @ $TrenchDig::dirtCount
 			  SPC "dirt"
-			  @ "<br><just:left>\c6(/\c3BTTHelp\c6 for help)");
+			  @ "<br><just:left>\c6(/\c3TTHelp\c6 for help)");
 }
 
-function GameConnection::BTT_getDirtColor(%this, %offset) {
-	if ($BTT::colorIsDefault)
-		%colorId = $BTT::defaultColor;
-	else if ($BTT::canChooseColor)
+function GameConnection::TRT_getDirtColor(%this, %offset) {
+	if ($TRT::colorIsDefault)
+		%colorId = $TRT::defaultColor;
+	else if ($TRT::canChooseColor)
 		%colorId = %this.currentColor;
 	else
 		%colorId = %this.trenchBrick[%this.trenchDirt - %offset];
 }
 
-function GameConnection::BTT_setMode(%this, %mode, %noTextUpdate) {
-	if (%mode.getName() !$= %this.BTT_mode.getName()) {
-		%this.BTT_mode.onStopMode(%this);
+function GameConnection::TRT_setMode(%this, %mode, %noTextUpdate) {
+	if (%mode.getName() !$= %this.TRT_mode.getName()) {
+		%this.TRT_mode.onStopMode(%this);
 		%mode.onStartMode(%this);
-		%this.BTT_mode = %mode;
+		%this.TRT_mode = %mode;
 	}
 
 	// Update text
 	if (!%noTextUpdate)
-		%this.BTT_updateText();
+		%this.TRT_updateText();
 
 	// Set image
 	%playerImg = %this.player.getMountedImage(0).getName();
 	if (%playerImg !$= %mode.image) {
-		announce("set mode:" SPC %mode.image);
-		%this.BTT_updatingImage = 1;
+		%this.TRT_updatingImage = 1;
 		%this.player.unmountImage(0);
 		%this.player.mountImage(%mode.image, 0);
-		%this.BTT_updatingImage = 0;
+		%this.TRT_updatingImage = 0;
 	}
 }
 
-function serverCmdBTTHelp(%this, %section) {
+function serverCmdTTHelp(%this, %section) {
 	%bullet = "  <font:impact:17>\c9*  <font:palatino linotype:25>";
 	%this.chatMessage(" ");
-	%this.chatMessage("<rmargin:400><just:center><font:Impact:40><shadow:2:2>\c6Better Trench Tool Help");
+	%this.chatMessage("<rmargin:400><just:center><font:Impact:40><shadow:2:2>\c6Trench Tool Help");
 	%this.chatMessage("<rmargin:400><just:center><font:Impact:20><shadow:2:2>\c6---------------------------------------------------------------------");
 	if (%section == 1) {
 		%this.chatMessage("<rmargin:400><just:center><font:Impact:30>\c6Description:<br>");
 		%this.chatMessage("<rmargin:1000><just:left>");
-		%this.chatMessage(%bullet SPC "\c6The \c4Better Trench Tool \c6works as a dirt placer and shovel.");
+		%this.chatMessage(%bullet SPC "\c6The \c4Trench Tool \c6works as a dirt placer and shovel.");
 		%this.chatMessage(%bullet SPC "\c6It also allows you to adjust how much dirt you can dig and place at a time.");
 	}
 	else if (%section == 2) {
@@ -88,7 +87,7 @@ function serverCmdBTTHelp(%this, %section) {
 	}
 }
 
-// Default BTTMode functions
-function BTTMode::fire(%this, %client){return;}
-function BTTMode::onStartMode(%this, %client){return;}
-function BTTMode::onStopMode(%this, %client){return;}
+// Default TRTMode functions
+function TRTMode::fire(%this, %client){return;}
+function TRTMode::onStartMode(%this, %client){return;}
+function TRTMode::onStopMode(%this, %client){return;}

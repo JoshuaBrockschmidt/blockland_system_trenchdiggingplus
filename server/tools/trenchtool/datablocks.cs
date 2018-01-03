@@ -1,22 +1,10 @@
-datablock ItemData(BetterTrenchToolItem)
-{
-	canDrop         = true;
-	category        = "Weapon";
-	className       = "Tool";
-	doColorShift    = true;
-	colorShiftColor = "0.55 0.27 0.08 1.00";
-	image           = "BetterTrenchToolImage";
-	shapeFile       = "base/data/shapes/brickweapon.dts";
-	uiName          = "Better Trench Tool";
-};
-
-datablock ShapeBaseImageData(BetterTrenchToolImage)
+datablock ShapeBaseImageData(TrenchToolImage)
 {
 	shapeFile = "base/data/shapes/brickweapon.dts";
 	mountPoint = 0;
 	offset = "0 0 0";
 	className = "WeaponImage";
-	item = BetterTrenchToolItem;
+	item = TrenchToolItem;
 	ammo = 1;
 	melee = false;
 	doRetraction = false;
@@ -65,16 +53,28 @@ datablock ShapeBaseImageData(BetterTrenchToolImage)
 	stateTimeoutValue[7]            = 0.2;
 };
 
-datablock ShapeBaseImageData(BetterTrenchToolShovelImage : BetterTrenchToolImage)
+datablock ShapeBaseImageData(TrenchToolShovelImage : TrenchToolImage)
 {
 	doColorShift    = true;
 	colorShiftColor = "0.48 0.56 0.48 1.00";
 };
 
-datablock ShapeBaseImageData(BetterTrenchToolPlacerImage : BetterTrenchToolImage)
+datablock ShapeBaseImageData(TrenchToolPlacerImage : TrenchToolImage)
 {
 	doColorShift    = true;
 	colorShiftColor = "0.55 0.27 0.08 1.00";
 	projectile = TrenchDirtProjectile;
 	projectileType = Projectile;
+};
+
+datablock ItemData(TrenchToolItem)
+{
+	canDrop         = true;
+	category        = "Weapon";
+	className       = "Tool";
+	doColorShift    = true;
+	colorShiftColor = "0.55 0.27 0.08 1.00";
+	image           = "TrenchToolImage";
+	shapeFile       = "base/data/shapes/brickweapon.dts";
+	uiName          = "Trench Tool";
 };

@@ -9,7 +9,7 @@ function vectorFloor(%vec) {
 	return %newVec;
 }
 
-function BTT_isDirtCube(%brick) {
+function TRT_isDirtCube(%brick) {
 	%dbName = %brick.getDatablock().getName();
 	if (%dbName $= "brick2xCubeDirtData"  ||
 	    %dbName $= "brick4xCubeDirtData"  ||
@@ -23,7 +23,7 @@ function BTT_isDirtCube(%brick) {
 	}
 }
 
-function BTT_isDirtBrick(%brick) {
+function TRT_isDirtBrick(%brick) {
 	%dbName = %brick.getDatablock().getName();
 	if (%dbName $= "brick8x16DirtData" ||
 	    %dbName $= "brick8x8DirtData"  ||
@@ -39,7 +39,7 @@ function BTT_isDirtBrick(%brick) {
 // Checks if two 2D AABB are colliding or touching.
 // AABB is a vector consisting of (x, y, width, height).
 // Returns 1 if the AABBs collide, and 0 if they do not.
-function BTT_AABBAABB_2D(%AABB1, %AABB2) {
+function TRT_AABBAABB_2D(%AABB1, %AABB2) {
 	%x1 = getWord(%AABB1, 0);
 	%y1 = getWord(%AABB1, 1);
 	%w1 = getWord(%AABB1, 2);
@@ -60,7 +60,7 @@ function BTT_AABBAABB_2D(%AABB1, %AABB2) {
 // Checks if two cube-shaped AABB are colliding or touching.
 // AABB is a vector consisting of (x, y, z, size x, size y, size z).
 // Returns 1 if the AABBs collide, and 0 if they do not.
-function BTT_AABBAABB_3D(%AABB1, %AABB2) {
+function TRT_AABBAABB_3D(%AABB1, %AABB2) {
 	%x1 = getWord(%AABB1, 0);
 	%y1 = getWord(%AABB1, 1);
 	%z1 = getWord(%AABB1, 2);
@@ -88,7 +88,7 @@ function BTT_AABBAABB_3D(%AABB1, %AABB2) {
 // The point is just a vector.
 // AABB is a vector consisting of (x, y, z, size x, size y, size z).
 // Returns 1 if the AABBs collide, and 0 if they do not.
-function BTT_PointAABB_3D(%point, %AABB) {
+function TRT_PointAABB_3D(%point, %AABB) {
 	%xp = getWord(%point, 0);
 	%yp = getWord(%point, 1);
 	%zp = getWord(%point, 2);
@@ -109,21 +109,21 @@ function BTT_PointAABB_3D(%point, %AABB) {
 		return 1;
 }
 
-function BTT_uncorrectVel(%player) {
-	%player.BTT_correctVel = 0;
+function TRT_uncorrectVel(%player) {
+	%player.TRT_correctVel = 0;
 }
 
-function BTT_dummyBrick(%db, %pos) {
+function TRT_dummyBrick(%db, %pos) {
 	%this = new ScriptGroup()
 	{
-		class = BTT_dummyBrick;
+		class = TRT_dummyBrick;
 	        db = %db;
 		position = %pos;
 	};
 	return %this;
 }
 
-function BTT_dummyBrick::hasRoom(%this) {
+function TRT_dummyBrick::hasRoom(%this) {
 	%box = %this.db.brickSizeX * 0.5 SPC
 		%this.db.brickSizeY * 0.5 SPC
 		%this.db.brickSizeZ * 0.2;
@@ -135,7 +135,7 @@ function BTT_dummyBrick::hasRoom(%this) {
 	return 1;
 }
 
-function BTT_dummyBrick::plant(%this, %client, %colorId, %bg) {
+function TRT_dummyBrick::plant(%this, %client, %colorId, %bg) {
 	%newBrick = new fxDTSBrick()
         {
 		client = %client;
@@ -162,10 +162,10 @@ function BTT_dummyBrick::plant(%this, %client, %colorId, %bg) {
 		%box = %db.brickSizeX * 0.5 SPC %db.brickSizeY * 0.5 SPC 0.1;
 		initContainerBoxSearch(%pos, %box, $TypeMasks::PlayerObjectType);
 		while(isObject(%player = containerSearchNext())) {
-			if (!%player.BTT_correctVel) {
+			if (!%player.TRT_correctVel) {
 				%player.addVelocity("0 0 2");
-				%player.BTT_correctVel = 1;
-				schedule(33, 0, BTT_uncorrectVel, %player);
+				%player.TRT_correctVel = 1;
+				schedule(33, 0, TRT_uncorrectVel, %player);
 			}
 		}
 
@@ -174,10 +174,10 @@ function BTT_dummyBrick::plant(%this, %client, %colorId, %bg) {
 }
 
 // Object for taking a chunk from a dirt brick.
-function BTT_chunk(%client, %brick) {
+function TRT_chunk(%client, %brick) {
 	%this = new ScriptGroup()
 	{
-		class = BTT_chunk;
+		class = TRT_chunk;
 		client = %client;
 		brick = %brick;
 		numTake = 0;
@@ -185,7 +185,7 @@ function BTT_chunk(%client, %brick) {
 	return %this;
 }
 
-function BTT_chunk::planFragments_split(%this, %newDbName, %brickPos, %boxPos, %boxDim, %shift) {
+function TRT_chunk::planFragments_split(%this, %newDbName, %brickPos, %boxPos, %boxDim, %shift) {
 	%displace1 = vectorScale("1 1 0", %shift);
 	%displace2 = vectorScale("-1 1 0", %shift);
 	%displace3 = vectorScale("1 -1 0", %shift);
@@ -202,7 +202,7 @@ function BTT_chunk::planFragments_split(%this, %newDbName, %brickPos, %boxPos, %
 
 // Figures out what bricks should be put in the place of the object's brick
 // and stores them as dummy vectors for later reconstruction.
-function BTT_chunk::planFragments(%this, %dbName, %brickPos, %boxPos, %boxDim) {
+function TRT_chunk::planFragments(%this, %dbName, %brickPos, %boxPos, %boxDim) {
 	if (%dbName $= "brick8x16DirtData") {
 		// If a brick of this size is chosen, it must be colliding with the box.
 		// Therefore, we will assume it needs to be split.
@@ -231,7 +231,7 @@ function BTT_chunk::planFragments(%this, %dbName, %brickPos, %boxPos, %boxDim) {
 			 0.5 * %dbName.brickSizeX SPC
 			 0.5 * %dbName.brickSizeX;
 		%boxAABB = getWords(%boxPos, 0, 1) SPC getWords(%boxDim, 0, 1);
-		if (BTT_AABBAABB_2D(%brickAABB, %boxAABB)) {
+		if (TRT_AABBAABB_2D(%brickAABB, %boxAABB)) {
 			if (%dbName $= "brick1x1DirtData") {
 				%this.numTake++;
 			}
@@ -242,7 +242,7 @@ function BTT_chunk::planFragments(%this, %dbName, %brickPos, %boxPos, %boxDim) {
 			}
 		}
 		else {
-			%dummy = BTT_dummyBrick(%dbName, %brickPos);
+			%dummy = TRT_dummyBrick(%dbName, %brickPos);
 			%this.add(%dummy);
 		}
 	}
@@ -266,7 +266,7 @@ function BTT_chunk::planFragments(%this, %dbName, %brickPos, %boxPos, %boxDim) {
 		%corner = vectorSub(%brickPos, %displace);
 		%brickAABB = %corner SPC vectorScale("0.5 0.5 0.5", %dbName.brickSizeX);
 		%boxAABB = %boxPos SPC %boxDim;
-		if (BTT_AABBAABB_3D(%brickAABB, %boxAABB)) {
+		if (TRT_AABBAABB_3D(%brickAABB, %boxAABB)) {
 			if (%dbName $= "brick2xCubeDirtData") {
 				%this.numTake++;
 			}
@@ -282,15 +282,15 @@ function BTT_chunk::planFragments(%this, %dbName, %brickPos, %boxPos, %boxDim) {
 			}
 		}
 		else {
-			%dummy = BTT_dummyBrick(%dbName, %brickPos);
+			%dummy = TRT_dummyBrick(%dbName, %brickPos);
 			%this.add(%dummy);
 		}
 	}
 }
 
 // Deletes the old brick and recontructs it according to the dummy vectors
-// created by BTT_chunk::chunk().
-function BTT_chunk::rebuild(%this, %boxPos, %boxDim) {
+// created by TRT_chunk::chunk().
+function TRT_chunk::rebuild(%this, %boxPos, %boxDim) {
 	%client = %this.brick.client;
 	%colorId = %this.brick.colorId;
 	%bg = %this.brick.getGroup();
@@ -310,22 +310,22 @@ function BTT_chunk::rebuild(%this, %boxPos, %boxDim) {
 }
 
 // Holds multiple chunks.
-function BTT_chunker(%client, %brick) {
+function TRT_chunker(%client, %brick) {
 	%this = new ScriptGroup()
         {
-		class = BTT_chunker;
+		class = TRT_chunker;
 		client = %client;
 	};
 	return %this;
 }
 
-function BTT_chunker::findChunks(%this, %box, %boxPos) {
+function TRT_chunker::findChunks(%this, %box, %boxPos) {
 	%this.clear();
 	%boxCorner = vectorSub(%boxPos, vectorScale(%box, 0.5));
 	initContainerBoxSearch(%boxPos, %box, $TypeMasks::fxBrickObjectType);
 	while (isObject(%brick = containerSearchNext())) {
 		if (%brick.isPlanted && %brick.getDatablock().isTrenchDirt) {
-			%newChunk = BTT_chunk(%this.client, %brick);
+			%newChunk = TRT_chunk(%this.client, %brick);
 			%dbName = %brick.getDatablock().getName();
 			%brickPos = %brick.position;
 			%newChunk.planFragments(%dbName, %brickPos, %boxCorner, %box);
@@ -334,7 +334,7 @@ function BTT_chunker::findChunks(%this, %box, %boxPos) {
 	}
 }
 
-function BTT_chunker::getTotalTake(%this) {
+function TRT_chunker::getTotalTake(%this) {
 	%numChunks = %this.getCount();
 	%totalTake = 0;
 	for (%i = 0; %i < %numChunks; %i++)
@@ -342,7 +342,7 @@ function BTT_chunker::getTotalTake(%this) {
 	return %totalTake;
 }
 
-function BTT_chunker::take(%this) {
+function TRT_chunker::take(%this) {
 	%numChunks = %this.getCount();
 	for (%i = 0; %i < %numChunks; %i++) {
 		%chunk = %this.getObject(%i);
@@ -355,10 +355,10 @@ function BTT_chunker::take(%this) {
 	return %colorIDs;
 }
 
-function BTT_refiller(%client, %pos, %isBrick) {
+function TRT_refiller(%client, %pos, %isBrick) {
 	%this = new ScriptGroup()
         {
-		class = BTT_refiller;
+		class = TRT_refiller;
 		client = %client;
 		position = %pos;
 		isBrick = %isBrick;
@@ -366,9 +366,9 @@ function BTT_refiller(%client, %pos, %isBrick) {
 	return %this;
 }
 
-function BTT_refiller::planPlacing(%this) {
+function TRT_refiller::planPlacing(%this) {
 	%this.deleteAll();
-	%cubeSize = %this.client.BTT_cubeSize;
+	%cubeSize = %this.client.TRT_cubeSize;
 	if (%this.isBrick) {
 		%incrX = 0.5;
 		%incrY = 0.5;
@@ -392,7 +392,7 @@ function BTT_refiller::planPlacing(%this) {
 		for (%y = 0; %y < %limitY; %y += %incrY) {
 			for (%z = 0; %z < %limitZ; %z += %incrZ) {
 				%brickPos = vectorAdd(%cornerPos, %x SPC %y SPC %z);
-				%dummy = BTT_dummyBrick(%db, %brickPos);
+				%dummy = TRT_dummyBrick(%db, %brickPos);
 				if (%dummy.hasRoom())
 					%this.add(%dummy);
 				else
@@ -402,24 +402,24 @@ function BTT_refiller::planPlacing(%this) {
 	}
 }
 
-function BTT_refiller::getNumPlace(%this) {
+function TRT_refiller::getNumPlace(%this) {
 	return %this.getCount();
 }
 
-function BTT_refiller::place(%this, %brickClient, %bg) {
+function TRT_refiller::place(%this, %brickClient, %bg) {
 	%count = %this.getCount();
 	for (%i = 0; %i < %count; %i++) {
-		%colorId = %brickClient.BTT_getDirtColor(%i);
+		%colorId = %brickClient.TRT_getDirtColor(%i);
 		%dummy = %this.getObject(%i);
 		%newBricks[%i] = %dummy.plant(%brickClient, %colorId, %bg);
 	}
 	%this.deleteAll();
 	for (%i = 0; %i < %count; %i++)
 		if (isObject(%newBricks[%i]))
-			BTT_refill(%newBricks[%i]);
+			TRT_refill(%newBricks[%i]);
 }
 
-function BTT_refill_findBrick(%pos, %box, %dbName) {
+function TRT_refill_findBrick(%pos, %box, %dbName) {
 	initContainerBoxSearch(%pos, %box, $TypeMasks::fxBrickObjectType);
 	%brick = containerSearchNext();
 	while (isObject(%brick)) {
@@ -437,7 +437,7 @@ function BTT_refill_findBrick(%pos, %box, %dbName) {
 // Returns the most prevelant color among a vector of dirt bricks.
 // In the case that no one color is most prevalent, the color of the
 // first dirt brick in the array will be returned.
-function BTT_refill_getColor(%bricks) {
+function TRT_refill_getColor(%bricks) {
 	%numBricks = getWordCount(%bricks);
 	%numColors = 0;
 	// Tally the colors
@@ -469,7 +469,7 @@ function BTT_refill_getColor(%bricks) {
 	return %maxColor;
 }
 
-function BTT_refill_replace(%bricks, %newPos) {
+function TRT_refill_replace(%bricks, %newPos) {
 	%dbName = getWord(%bricks, 0).getDatablock().getName();
 	%doRefill = 1;
 	%rot = "1 0 0 0";
@@ -510,7 +510,7 @@ function BTT_refill_replace(%bricks, %newPos) {
 	}
 	%brick1 = getWord(%bricks, 0);
 	%brickGroup = %brick1.getGroup();
-	%colorId = BTT_refill_getColor(%bricks);
+	%colorId = TRT_refill_getColor(%bricks);
 	%brickNum = getWordCount(%bricks);
 	for (%b = 0; %b < %brickNum; %b++)
 		getWord(%bricks, %b).delete();
@@ -531,10 +531,10 @@ function BTT_refill_replace(%bricks, %newPos) {
 	else
 		%brickGroup.add(%newDirt);
 	if (%doRefill)
-		BTT_refill(%newDirt);
+		TRT_refill(%newDirt);
 }
 
-function BTT_refill_brick_small(%brick) {
+function TRT_refill_brick_small(%brick) {
 	%dbName = %brick.getDatablock().getName();
 	%size = %dbName.brickSizeX;
 	%pos = %brick.position;
@@ -543,128 +543,128 @@ function BTT_refill_brick_small(%brick) {
 		 SPC 0.5;
 	// north
 	%northVec = vectorScale("0 0.5 0", %size);
-	%north = BTT_refill_findBrick(vectorAdd(%pos, %northVec), %box, %dbName);
+	%north = TRT_refill_findBrick(vectorAdd(%pos, %northVec), %box, %dbName);
 	%eastVec = vectorScale("0.5 0 0", %size);
-	%east = BTT_refill_findBrick(vectorAdd(%pos, %eastVec), %box, %dbName);
+	%east = TRT_refill_findBrick(vectorAdd(%pos, %eastVec), %box, %dbName);
 	%westVec = vectorScale("-0.5 0 0", %size);
-	%west = BTT_refill_findBrick(vectorAdd(%pos, %westVec), %box, %dbName);
+	%west = TRT_refill_findBrick(vectorAdd(%pos, %westVec), %box, %dbName);
 	if (isObject(%north)) {
 		// northeast
 		if (isObject(%east)) {
 			%neVec = vectorAdd(%northVec, %eastVec);
-			%ne = BTT_refill_findBrick(vectorAdd(%pos, %neVec), %box, %dbName);
+			%ne = TRT_refill_findBrick(vectorAdd(%pos, %neVec), %box, %dbName);
 			if (isObject(%ne)) {
 				%bricks = %brick SPC %north SPC %ne SPC %east;
 				%newPos = vectorAdd(%pos, vectorScale("0.25 0.25 0", %size));
-				BTT_refill_replace(%bricks, %newPos);
+				TRT_refill_replace(%bricks, %newPos);
 				return;
 			}
 		}
 		// northwest
 		if (isObject(%west)) {
 			%nwVec = vectorAdd(%northVec, %westVec);
-			%nw = BTT_refill_findBrick(vectorAdd(%pos, %nwVec), %box, %dbName);
+			%nw = TRT_refill_findBrick(vectorAdd(%pos, %nwVec), %box, %dbName);
 			if (isObject(%nw)) {
 				%bricks = %brick SPC %north SPC %nw SPC %west;
 				%newPos = vectorAdd(%pos, vectorScale("-0.25 0.25 0", %size));
-				BTT_refill_replace(%bricks, %newPos);
+				TRT_refill_replace(%bricks, %newPos);
 				return;
 			}
 		}
 	}
 	// south
 	%southVec = vectorScale("0 -0.5 0", %size);
-	%south = BTT_refill_findBrick(vectorAdd(%pos, %southVec), %box, %dbName);
+	%south = TRT_refill_findBrick(vectorAdd(%pos, %southVec), %box, %dbName);
 	if (isObject(%south)) {
 		// southeast
 		if (isObject(%east)) {
 			%seVec = vectorAdd(%southVec, %eastVec);
-			%se = BTT_refill_findBrick(vectorAdd(%pos, %seVec), %box, %dbName);
+			%se = TRT_refill_findBrick(vectorAdd(%pos, %seVec), %box, %dbName);
 			if (isObject(%se)) {
 				%bricks = %brick SPC %south SPC %se SPC %east;
 				%newPos = vectorAdd(%pos, vectorScale("0.25 -0.25 0", %size));
-				BTT_refill_replace(%bricks, %newPos);
+				TRT_refill_replace(%bricks, %newPos);
 				return;
 			}
 		}
 		// southwest
 		if (isObject(%west)) {
 			%swVec = vectorAdd(%southVec, %westVec);
-			%sw = BTT_refill_findBrick(vectorAdd(%pos, %swVec), %box, %dbName);
+			%sw = TRT_refill_findBrick(vectorAdd(%pos, %swVec), %box, %dbName);
 			if (isObject(%sw)) {
 				%bricks = %brick SPC %south SPC %sw SPC %west;
 				%newPos = vectorAdd(%pos, vectorScale("-0.25 -0.25 0", %size));
-				BTT_refill_replace(%bricks, %newPos);
+				TRT_refill_replace(%bricks, %newPos);
 				return;
 			}
 		}
 	}
 }
 
-function BTT_refill_brick_8x8(%brick) {
+function TRT_refill_brick_8x8(%brick) {
 	%dbName = %brick.getDatablock().getName();
 	%size = %dbName.brickSizeX;
 	%pos = %brick.position;
 	%box = 3.9 SPC 3.9 SPC 0.5;
 	// north
 	%northVec = vectorScale("0 0.5 0", %size);
-	%north = BTT_refill_findBrick(vectorAdd(%pos, %northVec), %box, %dbName);
+	%north = TRT_refill_findBrick(vectorAdd(%pos, %northVec), %box, %dbName);
 	if (isObject(%north)) {
 		%bricks = %brick SPC %north;
 		%newPos = vectorAdd(%pos, "0 2 0");
-		BTT_refill_replace(%bricks, %newPos);
+		TRT_refill_replace(%bricks, %newPos);
 		return;
 	}
 	// east
 	%eastVec = vectorScale("0.5 0 0", %size);
-	%east = BTT_refill_findBrick(vectorAdd(%pos, %eastVec), %box, %dbName);
+	%east = TRT_refill_findBrick(vectorAdd(%pos, %eastVec), %box, %dbName);
 	if (isObject(%east)) {
 		%bricks = %brick SPC %east;
 		%newPos = vectorAdd(%pos, "2 0 0");
-		BTT_refill_replace(%bricks, %newPos);
+		TRT_refill_replace(%bricks, %newPos);
 		return;
 	}
 	// south
 	%southVec = vectorScale("0 -0.5 0", %size);
-	%south = BTT_refill_findBrick(vectorAdd(%pos, %southVec), %box, %dbName);
+	%south = TRT_refill_findBrick(vectorAdd(%pos, %southVec), %box, %dbName);
 	if (isObject(%south)) {
 		%bricks = %brick SPC %south;
 		%newPos = vectorAdd(%pos, "0 -2 0");
-		BTT_refill_replace(%bricks, %newPos);
+		TRT_refill_replace(%bricks, %newPos);
 		return;
 	}
 	// west
 	%westVec = vectorScale("-0.5 0 0", %size);
-	%west = BTT_refill_findBrick(vectorAdd(%pos, %westVec), %box, %dbName);
+	%west = TRT_refill_findBrick(vectorAdd(%pos, %westVec), %box, %dbName);
 	if (isObject(%west)) {
 		%bricks = %brick SPC %west;
 		%newPos = vectorAdd(%pos, "-2 0 0");
-		BTT_refill_replace(%bricks, %newPos);
+		TRT_refill_replace(%bricks, %newPos);
 		return;
 	}
 }
 
-function BTT_refill_cube_sect(%baseBrick, %brick2, %box) {
+function TRT_refill_cube_sect(%baseBrick, %brick2, %box) {
 	%db = %baseBrick.getDatablock();
 	%dbName = %db.getName();
 	%pos1 = %baseBrick.position;
 	%pos2 = %brick2.position;
 	%northVec = vectorScale("0 0.5 0", %db.brickSizeX);
-	%north1 = BTT_refill_findBrick(vectorAdd(%pos1, %northVec), %box, %dbName);
-	%north2 = BTT_refill_findBrick(vectorAdd(%pos2, %northVec), %box, %dbName);
+	%north1 = TRT_refill_findBrick(vectorAdd(%pos1, %northVec), %box, %dbName);
+	%north2 = TRT_refill_findBrick(vectorAdd(%pos2, %northVec), %box, %dbName);
 	%eastVec = vectorScale("0.5 0 0", %db.brickSizeX);
-	%east1 = BTT_refill_findBrick(vectorAdd(%pos1, %eastVec), %box, %dbName);
-	%east2 = BTT_refill_findBrick(vectorAdd(%pos2, %eastVec), %box, %dbName);
+	%east1 = TRT_refill_findBrick(vectorAdd(%pos1, %eastVec), %box, %dbName);
+	%east2 = TRT_refill_findBrick(vectorAdd(%pos2, %eastVec), %box, %dbName);
 	%westVec = vectorScale("-0.5 0 0", %db.brickSizeX);
-	%west1 = BTT_refill_findBrick(vectorAdd(%pos1, %westVec), %box, %dbName);
-	%west2 = BTT_refill_findBrick(vectorAdd(%pos2, %westVec), %box, %dbName);
+	%west1 = TRT_refill_findBrick(vectorAdd(%pos1, %westVec), %box, %dbName);
+	%west2 = TRT_refill_findBrick(vectorAdd(%pos2, %westVec), %box, %dbName);
 	// north
 	if (isObject(%north1) && isObject(%north2)) {
 		// northeast
 		if (isObject(%east1) && isObject(%east2)) {
 			%neVec = vectorAdd(%northVec, %eastVec);
-			%ne1 = BTT_refill_findBrick(vectorAdd(%pos1, %neVec), %box, %dbName);
-			%ne2 = BTT_refill_findBrick(vectorAdd(%pos2, %neVec), %box, %dbName);
+			%ne1 = TRT_refill_findBrick(vectorAdd(%pos1, %neVec), %box, %dbName);
+			%ne2 = TRT_refill_findBrick(vectorAdd(%pos2, %neVec), %box, %dbName);
 			if (isObject(%ne1) && isObject(%ne2)) {
 				%bricks = %baseBrick SPC %brick2 SPC
 					%north1 SPC %north2 SPC
@@ -672,15 +672,15 @@ function BTT_refill_cube_sect(%baseBrick, %brick2, %box) {
 				        %east1 SPC %east2;
 				%displace = vectorScale(vectorAdd(%neVec, vectorSub(%pos2, %pos1)), 0.5);
 				%newPos = vectorAdd(%pos1, %displace);
-				BTT_refill_replace(%bricks, %newPos);
+				TRT_refill_replace(%bricks, %newPos);
 				return;
 			}
 		}
 		// northwest
 		if (isObject(%west1) && isObject(%west2)) {
 			%nwVec = vectorAdd(%northVec, %westVec);
-			%nw1 = BTT_refill_findBrick(vectorAdd(%pos1, %nwVec), %box, %dbName);
-			%nw2 = BTT_refill_findBrick(vectorAdd(%pos2, %nwVec), %box, %dbName);
+			%nw1 = TRT_refill_findBrick(vectorAdd(%pos1, %nwVec), %box, %dbName);
+			%nw2 = TRT_refill_findBrick(vectorAdd(%pos2, %nwVec), %box, %dbName);
 			if (isObject(%nw1) && isObject(%nw2)) {
 				%bricks = %baseBrick SPC %brick2 SPC
 				        %north1 SPC %north2 SPC
@@ -688,21 +688,21 @@ function BTT_refill_cube_sect(%baseBrick, %brick2, %box) {
 					%west1 SPC %west2;
 				%displace = vectorScale(vectorAdd(%nwVec, vectorSub(%pos2, %pos1)), 0.5);
 				%newPos = vectorAdd(%pos1, %displace);
-				BTT_refill_replace(%bricks, %newPos);
+				TRT_refill_replace(%bricks, %newPos);
 				return;
 			}
 		}
 	}
 	// south
 	%southVec = vectorScale("0 -0.5 0", %db.brickSizeX);
-	%south1 = BTT_refill_findBrick(vectorAdd(%pos1, %southVec), %box, %dbName);
-	%south2 = BTT_refill_findBrick(vectorAdd(%pos2, %southVec), %box, %dbName);
+	%south1 = TRT_refill_findBrick(vectorAdd(%pos1, %southVec), %box, %dbName);
+	%south2 = TRT_refill_findBrick(vectorAdd(%pos2, %southVec), %box, %dbName);
 	if (isObject(%south1) && isObject(%south2)) {
 		// southeast
 		if (isObject(%east1) && isObject(%east2)) {
 			%seVec = vectorAdd(%southVec, %eastVec);
-			%se1 = BTT_refill_findBrick(vectorAdd(%pos1, %seVec), %box, %dbName);
-			%se2 = BTT_refill_findBrick(vectorAdd(%pos2, %seVec), %box, %dbName);
+			%se1 = TRT_refill_findBrick(vectorAdd(%pos1, %seVec), %box, %dbName);
+			%se2 = TRT_refill_findBrick(vectorAdd(%pos2, %seVec), %box, %dbName);
 			if (isObject(%se1) && isObject(%se2)) {
 				%bricks = %baseBrick SPC %brick2 SPC
 					 %south1 SPC %south2 SPC
@@ -710,15 +710,15 @@ function BTT_refill_cube_sect(%baseBrick, %brick2, %box) {
 					 %east1 SPC %east2;
 				%displace = vectorScale(vectorAdd(%seVec, vectorSub(%pos2, %pos1)), 0.5);
 				%newPos = vectorAdd(%pos1, %displace);
-				BTT_refill_replace(%bricks, %newPos);
+				TRT_refill_replace(%bricks, %newPos);
 				return;
 			}
 		}
 		// southwest
 		if (isObject(%west1) && isObject(%west2)) {
 			%swVec = vectorAdd(%southVec, %westVec);
-			%sw1 = BTT_refill_findBrick(vectorAdd(%pos1, %swVec), %box, %dbName);
-			%sw2 = BTT_refill_findBrick(vectorAdd(%pos2, %swVec), %box, %dbName);
+			%sw1 = TRT_refill_findBrick(vectorAdd(%pos1, %swVec), %box, %dbName);
+			%sw2 = TRT_refill_findBrick(vectorAdd(%pos2, %swVec), %box, %dbName);
 			if (isObject(%sw1) && isObject(%sw2)) {
 				%bricks = %baseBrick SPC %brick2 SPC
 					 %south1 SPC %south2 SPC
@@ -726,48 +726,48 @@ function BTT_refill_cube_sect(%baseBrick, %brick2, %box) {
 					 %west1 SPC %west2;
 				%displace = vectorScale(vectorAdd(%swVec, vectorSub(%pos2, %pos1)), 0.5);
 				%newPos = vectorAdd(%pos1, %displace);
-				BTT_refill_replace(%bricks, %newPos);
+				TRT_refill_replace(%bricks, %newPos);
 				return;
 			}
 		}
 	}
 }
 
-function BTT_refill_cube(%brick) {
+function TRT_refill_cube(%brick) {
 	%db = %brick.getDatablock();
 	%pos = %brick.position;
 	%box = %db.brickSizeX * 0.5 SPC %db.brickSizeY * 0.5 SPC %db.brickSizeZ * 0.2;
 	%box = vectorSub(%box, "0.1 0.1 0.1");
 	%upVec = "0 0" SPC %db.brickSizeZ * 0.2;
-	%up = BTT_refill_findBrick(vectorAdd(%pos, %upVec), %box, %db.getName());
+	%up = TRT_refill_findBrick(vectorAdd(%pos, %upVec), %box, %db.getName());
 	if (isObject(%up)) {
-		BTT_refill_cube_sect(%brick, %up, %box);
+		TRT_refill_cube_sect(%brick, %up, %box);
 		return;
 	}
 	%downVec = "0 0" SPC -%db.brickSizeZ * 0.2;
-	%down = BTT_refill_findBrick(vectorAdd(%pos, %downVec), %box, %db.getName());
+	%down = TRT_refill_findBrick(vectorAdd(%pos, %downVec), %box, %db.getName());
 	if (isObject(%down)) {
-		BTT_refill_cube_sect(%brick, %down, %box);
+		TRT_refill_cube_sect(%brick, %down, %box);
 		return;
 	}
 }
 
 // Combines a dirt brick with nearby dirt bricks.
-function BTT_refill(%brick) {
+function TRT_refill(%brick) {
 	%dbName = %brick.getDatablock().getName();
 	%pos = %brick.position;
 	if (%dbName $= "brick4x4DirtData" ||
 	    %dbName $= "brick2x2DirtData" ||
 	    %dbName $= "brick1x1DirtData") {
-		BTT_refill_brick_small(%brick);
+		TRT_refill_brick_small(%brick);
 	}
 	else if (%dbName $= "brick8x8DirtData") {
-		BTT_refill_brick_8x8(%brick);
+		TRT_refill_brick_8x8(%brick);
 	} else if (%dbName $= "brick2xCubeDirtData"  ||
 		 %dbName $= "brick4xCubeDirtData"  ||
 		 %dbName $= "brick8xCubeDirtData"  ||
 		 %dbName $= "brick16xCubeDirtData" ||
 		 %dbName $= "brick32xCubeDirtData") {
-		BTT_refill_cube(%brick);
+		TRT_refill_cube(%brick);
 	}
 }

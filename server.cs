@@ -1,27 +1,11 @@
-if(ForceRequiredAddOn("Gamemode_TrenchDigging") == $Error::AddOn_NotFound) {
-	error("Gamemode_TrenchDigging not found! Better Trench Tool will not be loaded");
+if(forceRequiredAddOn("Player_No_Jet") == $Error::AddOn_NotFound) {
+	error("Player_No_Jet not found! Trench Digging Plus will not be loaded");
 	return;
 }
 
-$BTT::FilePath = filePath($Con::File) @ "/";
-$BTT::ScriptsPath = $BTT::FilePath @ "scripts/";
+$TDP::filePath = filePath($Con::File) @ "/";
+$TDP::serverPath = $TDP::filePath @ "server/";
 
-if(isObject(BTT_ServerGroup))
-	BTT_ServerGroup.delete();
-new ScriptGroup(BTT_ServerGroup);
-
-echo("--- Loading Better Trench Tool preferences ---");
-exec($BTT::ScriptsPath @ "prefs.cs");
-
-echo("--- Loading Better Trench Tool server scripts ---");
-exec($BTT::ScriptsPath @ "bettertrenchtool.cs");
-exec($BTT::ScriptsPath @ "bettertrenchtoolimage.cs");
-exec($BTT::ScriptsPath @ "datablocks.cs");
-exec($BTT::ScriptsPath @ "ghostgroup.cs");
-exec($BTT::ScriptsPath @ "other.cs");
-exec($BTT::ScriptsPath @ "placermode.cs");
-exec($BTT::ScriptsPath @ "shovelmode.cs");
-exec($BTT::ScriptsPath @ "toolmode.cs");
-
-echo("--- Activating Better Trench Tool package ---");
-activatePackage(BetterTrenchToolPackage);
+exec($TDP::serverPath @ "core/compat.cs");
+exec($TDP::serverPath @ "players/datablocks.cs");
+exec($TDP::serverPath @ "tools/trenchtool/server.cs");

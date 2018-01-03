@@ -3,23 +3,23 @@
 // dig or place.
 ////
 
-function BTT_ghostGroup(%client, %size, %pos, %isBrick) {
+function TRT_ghostGroup(%client, %size, %pos, %isBrick) {
 	%this = new ScriptGroup()
 		{
-			class = BTT_ghostGroup;
+			class = TRT_ghostGroup;
 			client = %client;
-			colorId = %client.BTT_getDirtColor();
+			colorId = %client.TRT_getDirtColor();
 			numBricks = 0;
 			position = %pos;
 			isBrick = %isBrick;
 		};
 	%this.setSize(%size);
-        BTT_ServerGroup.add(%this);
+        ServerGroup.add(%this);
 	return %this;
 }
 
-function BTT_ghostGroup::updateColor(%this) {
-	%clColorId = %this.client.BTT_getDirtColor();
+function TRT_ghostGroup::updateColor(%this) {
+	%clColorId = %this.client.TRT_getDirtColor();
 	if (%this.colorId != %clColorId) {
 		%this.colorId = %clColorId;
 		for (%i = 0; %i < %this.numBricks; %i++)
@@ -27,21 +27,21 @@ function BTT_ghostGroup::updateColor(%this) {
 	}
 }
 
-function BTT_ghostGroup::getBasePos_bricks(%this) {
+function TRT_ghostGroup::getBasePos_bricks(%this) {
 	%basePos = vectorAdd(vectorSub(%this.position,
 				       vectorScale("0.5 0.5 0.6", %this.size / 2)),
 			     "0.25 0.25 0.3");
 	return %basePos;
 }
 
-function BTT_ghostGroup::getBasePos_cubes(%this) {
+function TRT_ghostGroup::getBasePos_cubes(%this) {
 	%basePos = vectorAdd(vectorSub(%this.position,
 				       vectorScale("1 1 1", %this.size / 2)),
 			     "0.5 0.5 0.5");
 	return %basePos;
 }
 
-function BTT_ghostGroup::setSize(%this, %size) {
+function TRT_ghostGroup::setSize(%this, %size) {
 	if (%this.size == %size)
 		return;
 	%this.size = %size;
@@ -192,18 +192,18 @@ function BTT_ghostGroup::setSize(%this, %size) {
 	}
 }
 
-function BTT_ghostGroup::deleteBricks(%this) {
+function TRT_ghostGroup::deleteBricks(%this) {
 	for (%i = 0; %i < %this.numBricks; %i++)
 		%this.bricks[%i].delete();
 	%this.numBricks = 0;
 }
 
-function BTT_ghostGroup::delete(%this) {
+function TRT_ghostGroup::delete(%this) {
 	%this.deleteBricks();
 	parent::delete(%this);
 }
 
-function BTT_ghostGroup::setTransform(%this, %pos) {
+function TRT_ghostGroup::setTransform(%this, %pos) {
 	%this.position = %pos;
 	%i = 0;
 	for (%i = 0; %i < %this.numBricks; %i++) {
