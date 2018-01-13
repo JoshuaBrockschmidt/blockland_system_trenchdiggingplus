@@ -8,5 +8,3 @@ exec($TRT::filePath @ "shovelmode.cs");
 exec($TRT::filePath @ "toolmode.cs");
 exec($TRT::filePath @ "trenchtool.cs");
 exec($TRT::filePath @ "trenchtoolimage.cs");
-
-// TODO: do not show cube size when cube limit is 1

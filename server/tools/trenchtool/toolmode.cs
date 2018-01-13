@@ -15,7 +15,10 @@ TDP_ServerGroup.add(
 // See shovelmode.cs and placermode.cs for other modes.
 
 function GameConnection::TRT_updateText(%this) {
-	%cubeSize = "\c6Cube Size:\c3" SPC %this.TRT_cubeSize;
+	if ($TRT::maxCubeSize > 1)
+		%cubeSize = "\c6Cube Size:\c3" SPC %this.TRT_cubeSize;
+	else
+		%cubeSize = "";
 
 	%this.bottomPrint("<just:left>\c6" @ %this.TRT_mode.name
 			  @ "<just:center>" @ %cubeSize
