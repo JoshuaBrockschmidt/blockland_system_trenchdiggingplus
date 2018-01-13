@@ -16,7 +16,7 @@ function TRT_PlacerMode_getGhostPosition(%client) {
 		%pos = getWord(%args, 0) SPC getWord(%args, 1) SPC getWord(%args, 2);
 		%normal = getWord(%args, 3) SPC getWord(%args, 4) SPC getWord(%args, 5);
 		%dirt = getWord(%args, 6);
-		%isBrick = TRT_isDirtBrick(%dirt);
+		%isBrick = TDP_isDirtBrick(%dirt);
 		%displace = vectorScale(%normal, %client.TRT_cubeSize);
 		if (%isBrick) {
 			%displace = getWord(%displace, 0) * 0.5
@@ -37,7 +37,7 @@ function TRT_PlacerMode_ghostLoop(%client) {
 	} else {
 		%pos = getWords(%args, 0, 2);
 		%dirt = getWord(%args, 6);
-		%isBrick = TRT_isDirtBrick(%dirt);
+		%isBrick = TDP_isDirtBrick(%dirt);
 		if (isObject(%client.TRT_ghostGroup) &&
 		    %client.TRT_ghostGroup.isBrick == %isBrick) {
 			if (%client.TRT_ghostGroup.position !$= %pos)
@@ -66,14 +66,14 @@ function TRT_PlacerMode::fire(%this, %client) {
 		%pos = getWords(%args, 0, 2);
 		%normal = getWords(%args, 3, 5);
 		%dirt = getWord(%args, 6);
-		%isBrick = TRT_isDirtBrick(%dirt);
+		%isBrick = TDP_isDirtBrick(%dirt);
 
 		// Check if there is a vehicle or player object in the way.
 		if (%isBrick)
 			%box = vectorScale("0.5 0.5 0.6", %client.TRT_cubeSize);
 		else
 			%box = vectorScale("1 1 1", %client.TRT_cubeSize);
-	    %box = vectorSub(%box, "0.1 0.1 0.1");
+		%box = vectorSub(%box, "0.1 0.1 0.1");
 		%mask = $TypeMasks::PlayerObjectType | $TypeMasks::VehicleObjectType;
 		%aabb = vectorSub(%pos, vectorScale(%box, 0.5)) SPC %box;
 		initContainerBoxSearch(%pos, %box, %mask);
@@ -85,16 +85,16 @@ function TRT_PlacerMode::fire(%this, %client) {
 			// search extends past the object's actual collision
 			// box.
 			%objPos = vectorAdd(%obj.position, "0 0 0.1");
-			if (TRT_PointAABB_3D(%objPos, %aabb)) {
+			if (TDP_pointAABB_3D(%objPos, %aabb)) {
 				%msg = "\c3You cannot place that here!\n" @
 					"\c3There is something in the way.";
 				%client.centerPrint(%msg, 2);
 				return;
 			}
-		}
+		}		
 
 		// Attempt to place dirt.
-		%refiller = TRT_refiller(%client, %pos, %isBrick);
+		%refiller = TDP_Refiller(%pos, %client.TRT_cubeSize, %isBrick);
 		%refiller.planPlacing();
 		%numPlace = %refiller.getNumPlace();
 		if (%client.trenchDirt < %numPlace && !%client.isInfiniteMiner) {
@@ -107,10 +107,10 @@ function TRT_PlacerMode::fire(%this, %client) {
 		}
 		else {
 			%brickGroup = %dirt.getGroup();
-			%refiller.place(%client, %brickGroup);
+			%refiller.place(%dirt.client, %brickGroup, %client);
 			if (!%client.isInfiniteMiner)
 				%client.trenchDirt -= %numPlace;
-		}
+	        }
 		%refiller.delete();
 	}
 	%client.TRT_updateText();

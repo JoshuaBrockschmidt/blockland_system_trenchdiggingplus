@@ -5,7 +5,7 @@
 // TODO: add drag placing
 //  * see BuildAndShoot's or Ace of Spades' drag build game mechanic for reference.
 
-TRT_ServerGroup.add(
+TDP_ServerGroup.add(
 	new ScriptObject(TRT_DisabledMode)
 	{
 		class = "TRTMode";

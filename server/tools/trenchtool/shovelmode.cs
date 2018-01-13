@@ -2,7 +2,7 @@
 // Mode for digging dirt. Allows you to adjust cube size of section of dirt to dig.
 ////
 
-TRT_ServerGroup.add(
+TDP_ServerGroup.add(
 	new ScriptObject(TRT_ShovelMode)
 	{
 		class = "TRTMode";
@@ -19,7 +19,7 @@ function TRT_ShovelMode_getGhostPosition(%client) {
 	%normal = normalFromRayCast(%ray);
 	if(isObject(%dirt) && %dirt.getDatablock().isTrenchDirt) {
 		%rayPos = posFromRayCast(%ray);
-		%isBrick = TRT_isDirtBrick(%dirt);
+		%isBrick = TDP_isDirtBrick(%dirt);
 		if (%isBrick) {
 			%normalZ = mFloor(getWord(%normal, 2) + 0.5);
 			// If viewing from top or bottom.
@@ -70,7 +70,7 @@ function TRT_ShovelMode_getGhostPosition(%client) {
 			}
 			%retArgs = %pos SPC %normal SPC %dirt;
 		}
-		else if(TRT_isDirtCube(%dirt)) {
+		else if(TDP_isDirtCube(%dirt)) {
 			%offGridPos = vectorSub(%rayPos,
 						vectorScale(%normal,
 							    %client.TRT_cubeSize / 2));
@@ -95,7 +95,7 @@ function TRT_ShovelMode_ghostLoop(%client) {
 	} else {
 		%pos = getWords(%args, 0, 2);
 		%dirt = getWord(%args, 6);
-		%isBrick = TRT_isDirtBrick(%dirt);
+		%isBrick = TDP_isDirtBrick(%dirt);
 		if (isObject(%client.TRT_ghostGroup) &&
 		    %client.TRT_ghostGroup.isBrick == %isBrick) {
 			if (%client.TRT_ghostGroup.position !$= %pos)
@@ -125,8 +125,8 @@ function TRT_ShovelMode::fire(%this, %client) {
 		%pos = getWords(%args, 0, 2);
 		%normal = getWords(%args, 3, 5);
 		%dirt = getWord(%args, 6);
-		%isBrick = TRT_isDirtBrick(%dirt);
-		%toTake = TRT_chunker(%client);
+		%isBrick = TDP_isDirtBrick(%dirt);
+		%toTake = TDP_Chunker(%client);
 		if (%isBrick)
 			%box = vectorScale("0.5 0.5 0.6", %client.TRT_cubeSize);
 		else
