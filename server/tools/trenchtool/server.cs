@@ -10,4 +10,3 @@ exec($TRT::filePath @ "trenchtool.cs");
 exec($TRT::filePath @ "trenchtoolimage.cs");
 
 // TODO: do not show cube size when cube limit is 1
-// TODO: remove image when item is discarded
