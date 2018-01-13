@@ -104,7 +104,7 @@ package TrenchToolPackage {
 	function serverCmdDropTool(%client, %slot) {
 		%item = %client.player.tool[%slot].getName();
 		if (%item $= "TrenchToolItem" && %client.player.currTool == %slot)
-			%client.player.unMountImage();
+			%client.player.unMountImage(0);
 
 		Parent::serverCmdDropTool(%client, %slot);
 	}
