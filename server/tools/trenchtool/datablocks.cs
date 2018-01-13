@@ -1,3 +1,39 @@
+datablock ProjectileData(TrenchDirtProjectile)
+{
+	shapeFile = "base/data/shapes/empty.dts";
+	directDamage = 0;
+	directDamageType = "";
+	radiusDamageType = "";
+
+	brickExplosionRadius = 0;
+	brickExplosionImpact = false;
+	brickExplosionForce = 0;
+	brickExplosionMaxVolume = 0;
+	brickExplosionMaxVolumeFloating = 0;
+
+	impactImpulse = 0;
+	verticalImpulse = 0;
+	explosion = "";
+	particleEmitter = DirtShootEmitter;
+
+	muzzleVelocity = 40;
+	velInheritFactor = 1;
+
+	armingDelay = 0;
+	lifetime = 350;
+	fadeDelay = 0;
+	bounceElasticity = 0.5;
+	bounceFriction = 0.20;
+	isBallistic = true;
+	gravityMod = 0;
+
+	hasLight = false;
+	lightRadius = 2;
+	lightColor = "1 0.5 0";
+
+	uiName = "Trench Dirt";
+};
+
 datablock ShapeBaseImageData(TrenchToolImage)
 {
 	shapeFile = "base/data/shapes/brickweapon.dts";
