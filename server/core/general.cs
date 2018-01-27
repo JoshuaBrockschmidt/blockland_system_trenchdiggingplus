@@ -12,6 +12,41 @@ function vectorFloor(%vec) {
 	return %newVec;
 }
 
+// Checks if a string is a valid number.
+// Copied from https://www.garagegames.com/community/forums/viewthread/133985
+// Thanks to Michael Hall for posting the code. A slight correction was made.
+//
+// @param string str    String to validate.
+// @return		True if string represents a valid number,
+//			false otherwise.
+function strIsNum(%str) {
+	if (%str $= "")
+		return false;
+	%dots = 0;
+	for(%i = 0; (%char = getSubStr(%str, %i, 1)) !$= ""; %i++) {
+		switch$(%char) {
+		case "0" or "1" or "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9":
+			continue;
+		case ".":
+			if (%dots >= 1)
+				return false;
+			%dots++;
+			continue;
+		case "-":
+			if (%i) // Only valid as first character.
+				return false;
+			continue;
+		case "+":
+			if (%i) // Only valid as first character.
+				return false;
+			continue;
+		default:
+			return false;
+		}
+	}
+	return true;
+}
+
 // Checks if a brick is a dirt cube.
 //
 // @param FxDTSBrick brick	Brick to check.

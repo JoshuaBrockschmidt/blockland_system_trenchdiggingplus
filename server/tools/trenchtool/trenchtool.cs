@@ -1,3 +1,7 @@
+////
+// Includes packaged functions.
+////
+
 package TrenchToolPackage {
 	function GameConnection::onClientEnterGame(%this) {
 		Parent::onClientEnterGame(%this);
@@ -5,8 +9,6 @@ package TrenchToolPackage {
 		%this.TRT_mode = TRT_DisabledMode;
 		%this.TRT_selectedMode = TRT_ShovelMode;
 		%this.TRT_cubeSize = 1;
-		if (!%this.trenchDirt)
-			%this.trenchDirt = 0;
 	}
 
 	function GameConnection::onClientLeaveGame(%this) {
@@ -35,79 +37,102 @@ package TrenchToolPackage {
 			%this.TRT_updateText();
 	}
 
-	function serverCmdShiftBrick(%client, %x, %y, %z) {
+	function serverCmdShiftBrick(%cl, %x, %y, %z) {
 		// TODO: Make sure ghost brick is shifted as it changes size.
 		//       Otherwise, a player may be able to dig while the ghost brick is shifting.
-		if (%client.TRT_mode.getName() !$= TRT_DisabledMode) {
-			if (!%client.TRT_isFiring) {
+		if (%cl.TRT_mode.getName() !$= TRT_DisabledMode) {
+			if (!%cl.TRT_isFiring) {
 				if (%z > 0) {
-					%client.TRT_cubeSize++;
-					if (%client.TRT_cubeSize > $TRT::MaxCubeSize)
-						%client.TRT_cubeSize = $TRT::MaxCubeSize;
+					%cl.TRT_cubeSize++;
+					if (%cl.TRT_cubeSize > $TRT::MaxCubeSize)
+						%cl.TRT_cubeSize = $TRT::MaxCubeSize;
 					else
-						%client.player.playthread(2, shiftUp);
-					if (isObject(%client.TRT_ghostGroup))
-						%client.TRT_ghostGroup.setSize(%client.TRT_cubeSize);
+						%cl.player.playthread(2, shiftUp);
+					if (isObject(%cl.TRT_ghostGroup))
+						%cl.TRT_ghostGroup.setSize(%cl.TRT_cubeSize);
 				} else if (%z < 0) {
-					%client.TRT_cubeSize--;
-					if (%client.TRT_cubeSize < 1)
-						%client.TRT_cubeSize = 1;
+					%cl.TRT_cubeSize--;
+					if (%cl.TRT_cubeSize < 1)
+						%cl.TRT_cubeSize = 1;
 					else
-						%client.player.playthread(2, shiftDown);
-					if (isObject(%client.TRT_ghostGroup))
-						%client.TRT_ghostGroup.setSize(%client.TRT_cubeSize);
+						%cl.player.playthread(2, shiftDown);
+					if (isObject(%cl.TRT_ghostGroup))
+						%cl.TRT_ghostGroup.setSize(%cl.TRT_cubeSize);
 				}
-				%client.TRT_updateText();
+				%cl.TRT_updateText();
 			}
 		}
 		else {
-			Parent::serverCmdShiftBrick(%client, %x, %y, %z);
+			Parent::serverCmdShiftBrick(%cl, %x, %y, %z);
 		}
 	}
 
-	function serverCmdSuperShiftBrick(%client, %x, %y, %z) {
-		if (%client.TRT_mode.getName() !$= TRT_DisabledMode) {
-			if (!%client.TRT_isFiring) {
+	function serverCmdSuperShiftBrick(%cl, %x, %y, %z) {
+		if (%cl.TRT_mode.getName() !$= TRT_DisabledMode) {
+			if (!%cl.TRT_isFiring) {
 				if (%z > 0) {
-					%client.TRT_cubeSize = $TRT::MaxCubeSize;
-					%client.player.playthread(2, shiftUp);
-					%client.TRT_ghostGroup.setSize(%client.TRT_cubeSize);
+					%cl.TRT_cubeSize = $TRT::MaxCubeSize;
+					%cl.player.playthread(2, shiftUp);
+					%cl.TRT_ghostGroup.setSize(%cl.TRT_cubeSize);
 				} else if (%z < 0) {
-					%client.TRT_cubeSize = 1;
-					%client.player.playthread(2, shiftDown);
-					%client.TRT_ghostGroup.setSize(%client.TRT_cubeSize);
+					%cl.TRT_cubeSize = 1;
+					%cl.player.playthread(2, shiftDown);
+					%cl.TRT_ghostGroup.setSize(%cl.TRT_cubeSize);
 				}
-				%client.TRT_updateText();
+				%cl.TRT_updateText();
 			}
 		}
 		else {
-			Parent::serverCmdSuperShiftBrick(%client, %x, %y, %z);
+			Parent::serverCmdSuperShiftBrick(%cl, %x, %y, %z);
 		}
 	}
 
-	function serverCmdLight(%client) {
-		%mode = %client.TRT_mode.getName();
+	function serverCmdLight(%cl) {
+		%mode = %cl.TRT_mode.getName();
 		if (%mode !$= TRT_DisabledMode) {
 			if (%mode $= TRT_ShovelMode) {
-				%client.TRT_setMode(TRT_PlacerMode);
-				%client.TRT_selectedMode = TRT_PlacerMode;
+				%cl.TRT_setMode(TRT_PlacerMode);
+				%cl.TRT_selectedMode = TRT_PlacerMode;
 			} else if (%mode $= TRT_PlacerMode) {
-				%client.TRT_setMode(TRT_ShovelMode);
-				%client.TRT_selectedMode = TRT_ShovelMode;
+				%cl.TRT_setMode(TRT_ShovelMode);
+				%cl.TRT_selectedMode = TRT_ShovelMode;
 			}
-			%client.TRT_updateText();
+			%cl.TRT_updateText();
 		} else {
-			Parent::serverCmdLight(%client);
+			Parent::serverCmdLight(%cl);
 		}
 	}
 
-	function serverCmdDropTool(%client, %slot) {
-		%item = %client.player.tool[%slot].getName();
-		if (%item $= "TrenchToolItem" && %client.player.currTool == %slot)
-			%client.player.unMountImage(0);
+	function serverCmdDropTool(%cl, %slot) {
+		%item = %cl.player.tool[%slot].getName();
+		if (%item $= "TrenchToolItem" && %cl.player.currTool == %slot)
+			%cl.player.unMountImage(0);
 
-		Parent::serverCmdDropTool(%client, %slot);
+		Parent::serverCmdDropTool(%cl, %slot);
+	}
+
+	function GameConnection::TDP_setInfDirt(%this, %bool) {
+		Parent::TDP_setInfDirt(%this, %bool);
+
+		if (%this.TRT_mode.getName() !$= TRT_DisabledMode)
+			%this.TRT_updateText();
+	}
+
+	function GameConnection::TDP_setDirt(%this, %num) {
+		Parent::TDP_setDirt(%this, %num);
+
+		if (%this.TRT_mode.getName() !$= TRT_DisabledMode)
+			%this.TRT_updateText();
+	}
+
+	function GameConnection::TDP_setSpeedDirt(%this, %bool) {
+		Parent::TDP_setSpeedDirt(%this, %bool);
+
+		%mode = %this.TRT_mode;
+		if (%mode.getName() !$= TRT_DisabledMode) {
+			%img = %mode.getImage(%this);
+			%this.player.mountImage(%img, 0);
+			%this.TRT_updateText();
+		}
 	}
 };
-
-activatePackage(TrenchToolPackage);

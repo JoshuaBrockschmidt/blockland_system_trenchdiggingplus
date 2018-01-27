@@ -7,7 +7,6 @@ TDP_ServerGroup.add(
 	{
 		class = "TRTMode";
 		name  = "Shovel Mode";
-		image = TrenchToolShovelImage;
 	});
 
 function TRT_ShovelMode_getGhostPosition(%client) {
@@ -115,7 +114,7 @@ function TRT_ShovelMode_ghostLoop(%client) {
 }
 
 function TRT_ShovelMode::fire(%this, %client) {
-	if (%client.trenchDirt >= $TrenchDig::dirtCount) {
+	if (%client.TDP_dirtCnt >= $TDP::maxDirt && !%client.TDP_isInfDirt) {
 		%client.centerPrint("\c3You do not have enough room for any more dirt!", 1);
 		return;
 	}
@@ -134,8 +133,8 @@ function TRT_ShovelMode::fire(%this, %client) {
 		%box = vectorSub(%box, "0.1 0.1 0.1");
 		%toTake.findChunks(%box, %pos);
 		%totalTake = %toTake.getTotalTake();
-		if (%client.trenchDirt + %totalTake > $TrenchDig::dirtCount && !%client.isInfiniteMiner) {
-			%needed = (%client.trenchDirt + %totalTake) - $TrenchDig::dirtCount;
+		if (%client.TDP_dirtCnt + %totalTake > $TDP::maxDirt && !%client.TDP_isInfDirt) {
+			%needed = (%client.TDP_dirtCnt + %totalTake) - $TDP::maxDirt;
 			%msg = "\c3You do not have enough room for that much dirt!\n" @
 				 "\c3You need" SPC %needed SPC "less dirt.";
 			%client.centerPrint(%msg, 2);
@@ -144,12 +143,9 @@ function TRT_ShovelMode::fire(%this, %client) {
 		}
 		else {
 			%colorIDs = %toTake.take();
-			if (!%client.isInfiniteMiner) {
-				%start = %client.trenchDirt + 1;
-				%client.trenchDirt += %totalTake;
+			if (!%client.TDP_isInfDirt)
 				for (%i = 0; %i < %totalTake; %i++)
-					%client.trenchBrick[%start + %i] = getWord(%colorIDs, %i);
-			}
+					%client.TDP_pushDirt(1, getWord(%colorIDs, %i));
 		}
 		%toTake.delete();
 	}
@@ -164,4 +160,11 @@ function TRT_ShovelMode::onStopMode(%this, %client) {
 	cancel(%client.TRT_shovelMode_schedID);
 	if (isObject(%client.TRT_ghostGroup))
 		%client.TRT_ghostGroup.delete();
+}
+
+function TRT_ShovelMode::getImage(%this, %client) {
+	if (%client.TDP_isSpeedDirt)
+		return TrenchToolSpeedShovelImage;
+	else
+		return TrenchToolShovelImage;
 }

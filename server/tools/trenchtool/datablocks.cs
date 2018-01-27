@@ -1,3 +1,7 @@
+////
+// Datablocks for the Trench Tool.
+////
+
 datablock ParticleData(DirtShootParticle)
 {
 	dragCoefficient = 0.75;
@@ -93,7 +97,7 @@ datablock ShapeBaseImageData(TrenchToolImage)
 	stateSound[0]                   = weaponSwitchSound;
 
 	stateName[1]                    = "Ready";
-	stateScript[2]                  = "onReady";
+	stateScript[1]                  = "onReady";
 	stateTransitionOnTriggerDown[1] = "PreFire";
 	stateAllowImageChange[1]        = true;
 
@@ -142,6 +146,62 @@ datablock ShapeBaseImageData(TrenchToolPlacerImage : TrenchToolImage)
 	colorShiftColor = "0.55 0.27 0.08 1.00";
 	projectile = TrenchDirtProjectile;
 	projectileType = Projectile;
+};
+
+datablock ShapeBaseImageData(TrenchToolSpeedShovelImage: TrenchToolShovelImage)
+{
+	stateName[0]                    = "Activate";
+	stateTransitionOnTimeout[0]     = "Ready";
+	stateTimeoutValue[0]            = 0.05;
+	stateSound[0]                   = weaponSwitchSound;
+
+	stateName[1]                    = "Ready";
+	stateScript[1]                  = "onReady";
+	stateTransitionOnTriggerDown[1] = "PreFire";
+	stateAllowImageChange[1]        = true;
+
+	stateName[2]                    = "PreFire";
+	stateScript[2]                  = "onPreFire";
+	stateTransitionOnTimeout[2]     = "Fire";
+	stateAllowImageChange[2]        = true;
+	stateTimeoutValue[2]            = 0.05;
+
+	stateName[3]                    = "Fire";
+	stateScript[3]                  = "onFire";
+	stateAllowImageChange[3]        = false;
+	stateTimeoutValue[3]            = 0.05;
+	stateTransitionOnTimeout[3]     = "Ready";
+	stateFire[3]                    = true;
+	stateTransitionOnAmmo[3]        = "";
+	stateTransitionOnNoAmmo[3]	= "";
+};
+
+datablock ShapeBaseImageData(TrenchToolSpeedPlacerImage: TrenchToolPlacerImage)
+{
+	stateName[0]                    = "Activate";
+	stateTransitionOnTimeout[0]     = "Ready";
+	stateTimeoutValue[0]            = 0.05;
+	stateSound[0]                   = weaponSwitchSound;
+
+	stateName[1]                    = "Ready";
+	stateScript[1]                  = "onReady";
+	stateTransitionOnTriggerDown[1] = "PreFire";
+	stateAllowImageChange[1]        = true;
+
+	stateName[2]                    = "PreFire";
+	stateScript[2]                  = "onPreFire";
+	stateTransitionOnTimeout[2]     = "Fire";
+	stateAllowImageChange[2]        = true;
+	stateTimeoutValue[2]            = 0.05;
+
+	stateName[3]                    = "Fire";
+	stateScript[3]                  = "onFire";
+	stateAllowImageChange[3]        = false;
+	stateTimeoutValue[3]            = 0.05;
+	stateTransitionOnTimeout[3]     = "Ready";
+	stateFire[3]                    = true;
+	stateTransitionOnAmmo[3]        = "";
+	stateTransitionOnNoAmmo[3]	= "";
 };
 
 datablock ItemData(TrenchToolItem)

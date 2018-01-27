@@ -4,6 +4,7 @@
 
 // TODO: add drag placing
 //  * see BuildAndShoot's or Ace of Spades' drag build game mechanic for reference.
+//  * should probably be a seperate mode
 
 TDP_ServerGroup.add(
 	new ScriptObject(TRT_DisabledMode)
@@ -14,83 +15,96 @@ TDP_ServerGroup.add(
 
 // See shovelmode.cs and placermode.cs for other modes.
 
+// Updates a client's bottom text for the trench tool, providing information on
+// the client's tool mode, cube size, and the quantity of dirt they have.
+//
+// @param GameConnection this	Target client.
 function GameConnection::TRT_updateText(%this) {
 	if ($TRT::maxCubeSize > 1)
 		%cubeSize = "\c6Cube Size:\c3" SPC %this.TRT_cubeSize;
 	else
 		%cubeSize = "";
 
-	%this.bottomPrint("<just:left>\c6" @ %this.TRT_mode.name
+	if (%this.TDP_isInfDirt)
+		%dirt = "\c3Infinite Dirt";
+	else
+		%dirt = "\c3" @ %this.TDP_dirtCnt @ "\c6/\c3" @ $TDP::maxDirt SPC "Dirt";
+
+	if (%this.TDP_isSpeedDirt)
+		%modeInfo = "\c6" @ %this.TRT_mode.name SPC "(no delay)";
+	else
+		%modeInfo = "\c6" @ %this.TRT_mode.name;
+
+	%this.bottomPrint("<just:left>" @ %modeInfo
 			  @ "<just:center>" @ %cubeSize
 			  @ "            "
-			  @ "<just:right>\c3" @ %this.trenchDirt
-			  @ "\c6/\c3" @ $TrenchDig::dirtCount
-			  SPC "dirt"
+			  @ "<just:right>" @ %dirt
 			  @ "<br><just:left>\c6(/\c3TTHelp\c6 for help)");
 }
 
-function GameConnection::TRT_getDirtColor(%this, %offset) {
+// Gets the color ID of a single dirt unit to be placed, as per the trench tool's
+// color preferences.
+//
+// @param GameConnection this	Target client.
+// @param int offset		Offset from top of client's dirt stack, if
+//				preferences dictate the client's dirt stack be
+//				used for color values. 0 by default.
+function GameConnection::TRT_getDirtColorID(%this, %offset) {
 	if ($TRT::colorIsDefault)
-		%colorId = $TRT::defaultColor;
+		%colorID = $TDP::defaultColor;
 	else if ($TRT::canChooseColor)
-		%colorId = %this.currentColor;
+		%colorID = %this.currentColor;
+	else if (%this.TDP_isInfDirt)
+		%colorID = $TDP::defaultColor;
 	else
-		%colorId = %this.trenchBrick[%this.trenchDirt - %offset];
+		%colorID = %this.TDP_getDirtColorID(%offset);
+	return %colorID;
 }
 
-function GameConnection::TRT_setMode(%this, %mode, %noTextUpdate) {
-	if (%mode.getName() !$= %this.TRT_mode.getName()) {
-		%this.TRT_mode.onStopMode(%this);
-		%mode.onStartMode(%this);
-		%this.TRT_mode = %mode;
-	}
+// Gets the color IDs of dirt to be placed by a client, as dictate by dirt
+// preferences. Does not subtract from a client's total dirt.
+//
+// @param GameConnection this	Target client.
+// @param int num	        Quantity of dirt to get color IDs from.
+function GameConnection::TRT_getDirtColorIDs(%this, %num) {
+	for (%i = 0; %i < %num; %i++)
+		%colorIDs = %colorIDs SPC %this.TRT_getDirtColorID();
+	%colorIDs = trim(%colorIDs);
+	return %colorIDs;
+}
 
-	// Update text
+// Sets the tool mode for the trench tool for a client.
+//
+// @param GameConnection this	Target client.
+// @param TRTMode mode		Mode to switch to.
+// @param bool noTextUpdate	Whether or not to update the client's bottom
+//			        associated with trench tool. See
+//				GameConnection::TRT_updateText() for context.
+function GameConnection::TRT_setMode(%this, %mode, %noTextUpdate) {
+	// Do not change to mode if that same mode is already active.
+	if (%mode.getName() $= %this.TRT_mode.getName())
+		return;
+
+	// Switch mode.
+	%this.TRT_mode.onStopMode(%this);
+	%mode.onStartMode(%this);
+	%this.TRT_mode = %mode;
+
+	// Update text.
 	if (!%noTextUpdate)
 		%this.TRT_updateText();
 
-	// Set image
-	%playerImg = %this.player.getMountedImage(0).getName();
-	if (%playerImg !$= %mode.image) {
-		%this.TRT_updatingImage = 1;
-		%this.player.unmountImage(0);
-		%this.player.mountImage(%mode.image, 0);
-		%this.TRT_updatingImage = 0;
-	}
-}
-
-function serverCmdTTHelp(%this, %section) {
-	%bullet = "  <font:impact:17>\c9*  <font:palatino linotype:25>";
-	%this.chatMessage(" ");
-	%this.chatMessage("<rmargin:400><just:center><font:Impact:40><shadow:2:2>\c6Trench Tool Help");
-	%this.chatMessage("<rmargin:400><just:center><font:Impact:20><shadow:2:2>\c6---------------------------------------------------------------------");
-	if (%section == 1) {
-		%this.chatMessage("<rmargin:400><just:center><font:Impact:30>\c6Description:<br>");
-		%this.chatMessage("<rmargin:1000><just:left>");
-		%this.chatMessage(%bullet SPC "\c6The \c4Trench Tool \c6works as a dirt placer and shovel.");
-		%this.chatMessage(%bullet SPC "\c6It also allows you to adjust how much dirt you can dig and place at a time.");
-	}
-	else if (%section == 2) {
-		%this.chatMessage("<rmargin:400><just:center><font:Impact:30>\c6Controls:<br>");
-		%this.chatMessage("<rmargin:1000><just:left>");
-		%this.chatMessage(%bullet SPC "\c6Use the <Light Key> \c6to switch between modes.");
-		%this.chatMessage(%bullet SPC "\c3Shovel Mode \c6is for digging trench dirt.");
-		%this.chatMessage(%bullet SPC "\c3Placer Mode \c6is for placing trench dirt.");
-		%this.chatMessage(%bullet SPC "\c6Use <Shift Brick Up> \c6to increase the amount of dirt you can place and dig.");
-		%this.chatMessage(%bullet SPC "\c6Use <Shift Brick Down> \c6to decrease the amount of dirt you can place and dig.");
-		%this.chatMessage(%bullet SPC "\c6Use <Super Shift> \c6to quickly change between the smallest and biggest cube size.");
-		%this.chatMessage(%bullet SPC "\c6Change your paint color to change the color of the dirt you place.");
-		%this.chatMessage("      \c6(if the host has enabled this option)");
-	}
-	else {
-		%this.chatMessage("<rmargin:400><just:center><font:Impact:30>\c6Help Sections:<br>");
-		%this.chatMessage("<rmargin:1000><just:left>");
-		%this.chatMessage("  \c61 - \c3Description");
-		%this.chatMessage("  \c62 - \c3Controls");
-	}
+	// Mount appropriate image.
+	%this.TRT_updatingImage = 1;
+	%this.player.unmountImage(0);
+	%img = %mode.getImage(%this);
+	if (isObject(%img))
+		%this.player.mountImage(%img, 0);
+	%this.TRT_updatingImage = 0;
 }
 
 // Default TRTMode functions
 function TRTMode::fire(%this, %client){return;}
 function TRTMode::onStartMode(%this, %client){return;}
 function TRTMode::onStopMode(%this, %client){return;}
+function TRTMode::getImage(%this, %client){return -1;}

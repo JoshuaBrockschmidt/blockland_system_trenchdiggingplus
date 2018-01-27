@@ -7,7 +7,6 @@ TDP_ServerGroup.add(
 	{
 		class = "TRTMode";
 		name  = "Placer Mode";
-		image = TrenchToolPlacerImage;
 	});
 
 function TRT_PlacerMode_getGhostPosition(%client) {
@@ -57,7 +56,7 @@ function TRT_PlacerMode_ghostLoop(%client) {
 }
 
 function TRT_PlacerMode::fire(%this, %client) {
-	if(%client.trenchDirt <= 0 && !%client.isInfiniteMiner) {
+	if(%client.TDP_dirtCnt <= 0 && !%client.TDP_isInfDirt) {
 		%client.centerPrint("\c3You have no dirt to release!", 1);
 		return;
 	}
@@ -97,8 +96,8 @@ function TRT_PlacerMode::fire(%this, %client) {
 		%refiller = TDP_Refiller(%pos, %client.TRT_cubeSize, %isBrick);
 		%refiller.planPlacing();
 		%numPlace = %refiller.getNumPlace();
-		if (%client.trenchDirt < %numPlace && !%client.isInfiniteMiner) {
-			%needed = %numPlace - %client.trenchDirt;
+		if (%client.TDP_dirtCnt < %numPlace && !%client.TDP_isInfDirt) {
+			%needed = %numPlace - %client.TDP_dirtCnt;
 			%msg = "\c3You cannot place this much dirt!\n" @
 				 "\c3You need" SPC %needed SPC "more dirt.";
 			%client.centerPrint(%msg, 2);
@@ -106,10 +105,11 @@ function TRT_PlacerMode::fire(%this, %client) {
 			//       start by placing bricks furthest away as per the %normal
 		}
 		else {
+			%colorIDs = %client.TRT_getDirtColorIDs(%numPlace);
 			%brickGroup = %dirt.getGroup();
-			%refiller.place(%dirt.client, %brickGroup, %client);
-			if (!%client.isInfiniteMiner)
-				%client.trenchDirt -= %numPlace;
+			%refiller.place(%dirt.client, %brickGroup, %client, %colorIDs);
+			if (!%client.TDP_isInfDirt)
+				%colorIDs = %client.TDP_subDirt(%numPlace);
 	        }
 		%refiller.delete();
 	}
@@ -128,4 +128,11 @@ function TRT_PlacerMode::onStopMode(%this, %client) {
 	cancel(%client.TRT_placerMode_schedID);
 	if (isObject(%client.TRT_ghostGroup))
 		%client.TRT_ghostGroup.delete();
+}
+
+function TRT_PlacerMode::getImage(%this, %client) {
+	if (%client.TDP_isSpeedDirt)
+		return TrenchToolSpeedPlacerImage;
+	else
+		return TrenchToolPlacerImage;
 }

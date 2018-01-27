@@ -19,8 +19,10 @@ $TDP::serverPath = $TDP::filePath @ "server/";
 
 exec($TDP::serverPath @ "bricks/datablocks.cs");
 exec($TDP::serverPath @ "core/chunk.cs");
+exec($TDP::serverPath @ "core/dirt.cs");
 exec($TDP::serverPath @ "core/general.cs");
+exec($TDP::serverPath @ "core/prefs.cs");
 exec($TDP::serverPath @ "players/datablocks.cs");
 exec($TDP::serverPath @ "tools/trenchtool/server.cs");
 
-// TODO: add infinite miner and whatnot
+activatePackage(TrenchDiggingPlusPackage);

@@ -1,5 +1,5 @@
 ////
-// Handles equipping and firing of the Trench Tool
+// Handles equipping and firing of the Trench Tool.
 ////
 
 function TrenchToolImage::onMount(%this, %player, %slot) {
@@ -35,7 +35,7 @@ function TrenchToolImage::onPreFire(%this, %player, %slot) {
 	%delay = 100 + (%cl.TRT_cubeSize - 1) * $TRT::delayMult * 1000;
 	%cl.TRT_preFireSched = schedule(%delay, 0, TRT_onPreFire_endWait, %player, %slot);
 
-	// Handle animation
+	// Handle animation.
 	if (%cl.TRT_cubeSize == 1) {
 		%player.playThread(2, armAttack);
 		%player.schedule(200, playThread, 2, root);
@@ -51,7 +51,7 @@ function TrenchToolImage::onFire(%this, %player, %slot) {
 	%cl = %player.client;
 	%emit = %cl.TRT_mode.fire(%player.client);
 	if (%emit)
-		parent::onFire(%this, %player, %slot);
+		Parent::onFire(%this, %player, %slot);
 
 	// Handle animation
 	if (%cl.TRT_cubeSize > 1)
@@ -103,5 +103,51 @@ function TrenchToolPlacerImage::onPreFire(%this, %player, %slot) {
 }
 
 function TrenchToolPlacerImage::onFire(%this, %player, %slot) {
+	TrenchToolImage::onFire(%this, %player, %slot);
+}
+
+
+// Speed shovel mode
+
+function TrenchToolSpeedShovelImage::onMount(%this, %player, %slot) {
+	TrenchToolImage::onMount(%this, %player, %slot);
+}
+
+function TrenchToolSpeedShovelImage::onUnmount(%this, %player, %slot) {
+	TrenchToolImage::onUnmount(%this, %player, %slot);
+}
+
+function TrenchToolSpeedShovelImage::onReady(%this, %player, %slot) {
+	%player.playThread(2, root);
+}
+
+function TrenchToolSpeedShovelImage::onPreFire(%this, %player, %slot) {
+	%player.playThread(2, armAttack);
+}
+
+function TrenchToolSpeedShovelImage::onFire(%this, %player, %slot) {
+	TrenchToolImage::onFire(%this, %player, %slot);
+}
+
+
+// Speed placer mode
+
+function TrenchToolSpeedPlacerImage::onMount(%this, %player, %slot) {
+	TrenchToolImage::onMount(%this, %player, %slot);
+}
+
+function TrenchToolSpeedPlacerImage::onUnmount(%this, %player, %slot) {
+	TrenchToolImage::onUnmount(%this, %player, %slot);
+}
+
+function TrenchToolSpeedPlacerImage::onReady(%this, %player, %slot) {
+        TrenchToolSpeedShovelImage::onReady(%this, %player, %slot);
+}
+
+function TrenchToolSpeedPlacerImage::onPreFire(%this, %player, %slot) {
+	TrenchToolSpeedShovelImage::onPreFire(%this, %player, %slot);
+}
+
+function TrenchToolSpeedPlacerImage::onFire(%this, %player, %slot) {
 	TrenchToolImage::onFire(%this, %player, %slot);
 }

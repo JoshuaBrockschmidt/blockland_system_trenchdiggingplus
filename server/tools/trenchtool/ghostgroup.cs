@@ -8,7 +8,7 @@ function TRT_ghostGroup(%client, %size, %pos, %isBrick) {
 		{
 			class = TRT_ghostGroup;
 			client = %client;
-			colorId = %client.TRT_getDirtColor();
+			colorId = %client.TRT_getDirtColorID();
 			numBricks = 0;
 			position = %pos;
 			isBrick = %isBrick;
@@ -200,7 +200,7 @@ function TRT_ghostGroup::deleteBricks(%this) {
 
 function TRT_ghostGroup::delete(%this) {
 	%this.deleteBricks();
-	parent::delete(%this);
+	Parent::delete(%this);
 }
 
 function TRT_ghostGroup::setTransform(%this, %pos) {

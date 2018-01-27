@@ -167,7 +167,7 @@ function TDP_Chunk::planFragments(%this, %db, %brickPos, %boxPos, %box) {
 	default:
 		return;
 	}
-	
+
         if (%checkBrick) {
 		%displace = vectorScale("0.25 0.25 0.3", %db.brickSizeX);
 		%corner = vectorSub(%brickPos, %displace);
@@ -360,11 +360,19 @@ function TDP_Refiller::getNumPlace(%this) {
 // @param GameConnection brickCl	Client to place bricks in ownership of.
 // @param SimSet bg			Brickgroup of newly placed bricks.
 // @param GameConnection cl		Client placing dirt.
-function TDP_Refiller::place(%this, %brickCl, %bg, %cl) {
+// @param string colorIDs		Color IDs of dirt bricks to be placed,
+//					ordered left to right. If entries are
+//					left empty, or variable itself is null,
+//					the default dirt color will be used,
+//					as defined by $TDP::defaultColor.
+function TDP_Refiller::place(%this, %brickCl, %bg, %cl, %colorIDs) {
 	%count = %this.getCount();
 	for (%i = 0; %i < %count; %i++) {
 		// TODO: add support for lack of %cl; use color of dirt being placed on
-		%colorID = %cl.TRT_getDirtColor(%i);
+		%colorID = getWord(%colorIDs, %i);
+		if (%colorID $= "")
+			%colorID = $TDP::defaultColor;
+		%cl.TDP_getDirtColorID(%i);
 		%dummy = %this.getObject(%i);
 		%newBricks[%i] = %dummy.plant(%cl, %colorID, %bg);
 	}
