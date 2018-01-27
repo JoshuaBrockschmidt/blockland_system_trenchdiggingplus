@@ -1,3 +1,44 @@
+datablock ParticleData(DirtShootParticle)
+{
+	dragCoefficient = 0.75;
+	windCoefficient = 0.2;
+	gravityCoefficient = 0.01;
+	inheritedVelFactor = 0;
+	constantAcceleration = 0;
+	lifetimeMS = 200;
+	lifetimeVarianceMS = 25;
+	spinSpeed = 0;
+	spinRandomMin = -900;
+	spinRandomMax = 900;
+	useInvAlpha = true;
+	textureName = "base/data/particles/cloud";
+
+	colors[0] = "0.6 0.35 0 1";
+	colors[1] = "0.5 0.25 0 1";
+	colors[2] = "0.25 0.125 0 0";
+	sizes[0] = 0.55;
+	sizes[1] = 0.63;
+	sizes[2] = 0.4;
+	times[0] = 0;
+	times[1] = 0.5;
+	times[2] = 1;
+};
+
+datablock ParticleEmitterData(DirtShootEmitter)
+{
+	ejectionPeriodMS = 5;
+	periodVarianceMS = 5;
+	ejectionVelocity = 0.75;
+	velocityVariance = 0;
+	ejectionOffset = 0;
+	thetaMin = 0;
+	thetaMax = 180;
+	phiReferenceVel = 0;
+	phiVariance = 360;
+	particles = DirtShootParticle;
+	uiName = "Dirt Shot";
+};
+
 datablock ProjectileData(TrenchDirtProjectile)
 {
 	shapeFile = "base/data/shapes/empty.dts";
