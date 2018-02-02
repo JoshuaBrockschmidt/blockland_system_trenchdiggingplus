@@ -1,6 +1,6 @@
 ////
 // Provides the ghost brick object that shows where a player is going to
-// dig or place.
+// dig or place dirt.
 ////
 
 function TRT_ghostGroup(%client, %size, %pos, %isBrick) {
@@ -19,7 +19,7 @@ function TRT_ghostGroup(%client, %size, %pos, %isBrick) {
 }
 
 function TRT_ghostGroup::updateColor(%this) {
-	%clColorId = %this.client.TRT_getDirtColor();
+	%clColorId = %this.client.TRT_getDirtColorID();
 	if (%this.colorId != %clColorId) {
 		%this.colorId = %clColorId;
 		for (%i = 0; %i < %this.numBricks; %i++)
