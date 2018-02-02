@@ -25,7 +25,7 @@ function GameConnection::TRT_updateText(%this) {
 	else
 		%cubeSize = "";
 
-	if (%this.TDP_isInfDirt)
+	if (%this.TDP_isInfDirt || $TDP::infDirtForAll)
 		%dirt = "\c3Infinite Dirt";
 	else
 		%dirt = "\c3" @ %this.TDP_dirtCnt @ "\c6/\c3" @ $TDP::maxDirt SPC "Dirt";
@@ -54,7 +54,7 @@ function GameConnection::TRT_getDirtColorID(%this, %offset) {
 		%colorID = $TDP::defaultColor;
 	else if ($TRT::canChooseColor)
 		%colorID = %this.currentColor;
-	else if (%this.TDP_isInfDirt)
+	else if (%this.TDP_isInfDirt || $TDP::infDirtForAll)
 		%colorID = $TDP::defaultColor;
 	else
 		%colorID = %this.TDP_getDirtColorID(%offset);

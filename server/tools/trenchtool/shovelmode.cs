@@ -114,7 +114,7 @@ function TRT_ShovelMode_ghostLoop(%client) {
 }
 
 function TRT_ShovelMode::fire(%this, %client) {
-	if (%client.TDP_dirtCnt >= $TDP::maxDirt && !%client.TDP_isInfDirt) {
+	if (%client.TDP_dirtCnt >= $TDP::maxDirt && !%client.TDP_isInfDirt && !$TDP::infDirtForAll) {
 		%client.centerPrint("\c3You do not have enough room for any more dirt!", 1);
 		return;
 	}
@@ -133,7 +133,7 @@ function TRT_ShovelMode::fire(%this, %client) {
 		%box = vectorSub(%box, "0.1 0.1 0.1");
 		%toTake.findChunks(%box, %pos);
 		%totalTake = %toTake.getTotalTake();
-		if (%client.TDP_dirtCnt + %totalTake > $TDP::maxDirt && !%client.TDP_isInfDirt) {
+		if (%client.TDP_dirtCnt + %totalTake > $TDP::maxDirt && !(%client.TDP_isInfDirt || $TDP::infDirtForAll)) {
 			%needed = (%client.TDP_dirtCnt + %totalTake) - $TDP::maxDirt;
 			%msg = "\c3You do not have enough room for that much dirt!\n" @
 				 "\c3You need" SPC %needed SPC "less dirt.";
@@ -143,7 +143,7 @@ function TRT_ShovelMode::fire(%this, %client) {
 		}
 		else {
 			%colorIDs = %toTake.take();
-			if (!%client.TDP_isInfDirt)
+			if (!(%client.TDP_isInfDirt || $TDP::infDirtForAll))
 				for (%i = 0; %i < %totalTake; %i++)
 					%client.TDP_pushDirt(1, getWord(%colorIDs, %i));
 		}

@@ -285,73 +285,81 @@ function GameConnection::TDP_timeoutDirtOffer(%this) {
 //				In absence of a name, the client who called the
 //				command will be targeted.
 function serverCmdGiveDirt(%cl, %n1, %n2, %n3, %n4, %n5, %n6, %n7) {
-	if ($TDP::canGiveDirt) {
-		// Parse arguments.
-		%args = trim(%n1 SPC %n2 SPC %n3 SPC %n4 SPC %n5 SPC %n6 SPC %n7);
-		%cnt = getWordCount(%args);
-		%name = trim(getWords(%args, 0, %cnt - 2));
-		%offer = getWord(%args, %cnt - 1);
-
-		// Verify arguments.
-		if (%name $= "" || %offer $= "") {
-			messageClient(%cl, '' , "\c3Please provide a \c6username \c3and \c6number" SPC %name);
-			return;
-		}
-		%target = findClientByName(%name);
-		if (!isObject(%target)) {
-			messageClient(%cl, '' , "\c3Player\c6" SPC %name SPC "\c3could not be found");
-			return;
-		}
-		if (%target.getID() == %cl.getID()) {
-			messageClient(%cl, '' , "\c3You cannot give yourself dirt");
-			return;
-		}
-		if (!strIsNum(%offer) || %offer < 1) {
-			messageClient(%target, '' , "\c3Invalid quantity of dirt to give");
-			return;
-		}
-
-		// Ensure player has dirt to give.
-		if (%cl.TDP_dirtCnt < 1) {
-			messageClient(%cl, '' , "\c3You have no dirt to give");
-			return;
-		}
-
-		// Check if target client already has pending offer.
-		if (isObject(%target.TDP_give["offerFrom"])) {
-			messageClient(%cl, '', "\c6" @ %target.name SPC "\c3already has a pending offer");
-			return;
-		}
-
-		// If client is already offering dirt, cancel their offer.
-		if (isObject(%cl.TDP_give["offerTo"])) {
-			messageClient(%cl, '', "\c3Your dirt offer to\c6" SPC %to.name SPC "\c3has been cancelled");
-			messageClient(%to, '', "\c3The dirt offer from\c6" SPC %cl.name SPC "\c3has been cancelled");
-			%cl.TDP_endDirtOffer();
-		}
-
-		// Ensure realistic dirt offer.
-		if (%offer > %cl.TDP_dirtCnt)
-			%offer = %cl.TDP_dirtCnt;
-		else
-			%offer = mCeil(%offer);
-
-		// Give offer to target client.
-		%cl.TDP_give["offerTo"] = %target;
-		%cl.TDP_give["offer"] = %offer;
-		%target.TDP_give["offerFrom"] = %cl;
-		messageClient(%cl, '', "\c3You have offered\c6" SPC %offer SPC "\c3to\c6" SPC %target.name);
-		messageClient(%cl, '', "\c3Type \c6/cancelDirt \c3to cancel this offer");
-		messageClient(%target, '', "\c6" @ %cl.name SPC "\c3has offered you\c6" SPC %offer SPC "\c3dirt");
-		messageClient(%target, '', "\c3Type \c6/acceptDirt \c3to accept this offer");
-		messageClient(%target, '', "\c3Type \c6/rejectDirt \c3to reject this offer, or wait for it to timeout");
-
-		// Cancel offer in two minutes if target client does not accept.
-		%cl.TDP_give["offerEvent"] = %cl.schedule(120000, TDP_timeoutDirtOffer);
+	if (%cl.TDP_isInfDirt || $TDP::infDirtForAll) {
+		messageClient(%cl, '', "\c3You cannot give dirt when infinite dirt is enabled");
+		return;
 	}
-	else {
+	if (!$TDP::canGiveDirt) {
 		messageClient(%cl, '', "\c3Dirt giving is disabled");
+		return;
 	}
+
+	// Parse arguments.
+	%args = trim(%n1 SPC %n2 SPC %n3 SPC %n4 SPC %n5 SPC %n6 SPC %n7);
+	%cnt = getWordCount(%args);
+	%name = trim(getWords(%args, 0, %cnt - 2));
+	%offer = getWord(%args, %cnt - 1);
+
+	// Verify arguments.
+	if (%name $= "" || %offer $= "") {
+		messageClient(%cl, '' , "\c3Please provide a \c6username \c3and \c6number" SPC %name);
+		return;
+	}
+	%target = findClientByName(%name);
+	if (!isObject(%target)) {
+		messageClient(%cl, '' , "\c3Player\c6" SPC %name SPC "\c3could not be found");
+		return;
+	}
+	if (%target.getID() == %cl.getID()) {
+		messageClient(%cl, '' , "\c3You cannot give yourself dirt");
+		return;
+	}
+	if (%target.TDP_isInfDirt) {
+		messageClient(%cl, '' , "\c3You cannot give dirt to someone with infinite dirt");
+		return;
+	}
+	if (!strIsNum(%offer) || %offer < 1) {
+		messageClient(%target, '' , "\c3Invalid quantity of dirt to give");
+		return;
+	}
+
+	// Ensure player has dirt to give.
+	if (%cl.TDP_dirtCnt < 1) {
+		messageClient(%cl, '' , "\c3You have no dirt to give");
+		return;
+	}
+
+	// Check if target client already has pending offer.
+	if (isObject(%target.TDP_give["offerFrom"])) {
+		messageClient(%cl, '', "\c6" @ %target.name SPC "\c3already has a pending offer");
+		return;
+	}
+
+	// If client is already offering dirt, cancel their offer.
+	if (isObject(%cl.TDP_give["offerTo"])) {
+		messageClient(%cl, '', "\c3Your dirt offer to\c6" SPC %to.name SPC "\c3has been cancelled");
+		messageClient(%to, '', "\c3The dirt offer from\c6" SPC %cl.name SPC "\c3has been cancelled");
+		%cl.TDP_endDirtOffer();
+	}
+
+	// Ensure realistic dirt offer.
+	if (%offer > %cl.TDP_dirtCnt)
+		%offer = %cl.TDP_dirtCnt;
+	else
+		%offer = mCeil(%offer);
+
+	// Give offer to target client.
+	%cl.TDP_give["offerTo"] = %target;
+	%cl.TDP_give["offer"] = %offer;
+	%target.TDP_give["offerFrom"] = %cl;
+	messageClient(%cl, '', "\c3You have offered\c6" SPC %offer SPC "\c3to\c6" SPC %target.name);
+	messageClient(%cl, '', "\c3Type \c6/cancelDirt \c3to cancel this offer");
+	messageClient(%target, '', "\c6" @ %cl.name SPC "\c3has offered you\c6" SPC %offer SPC "\c3dirt");
+	messageClient(%target, '', "\c3Type \c6/acceptDirt \c3to accept this offer");
+	messageClient(%target, '', "\c3Type \c6/rejectDirt \c3to reject this offer, or wait for it to timeout");
+
+	// Cancel offer in two minutes if target client does not accept.
+	%cl.TDP_give["offerEvent"] = %cl.schedule(120000, TDP_timeoutDirtOffer);
 }
 
 // Cancels a dirt offer.
@@ -425,14 +433,14 @@ package TrenchDiggingPlusPackage {
 
 	function GameConnection::onClientLeaveGame(%this) {
 		// Cancel any pending dirt offers
-		if (isObject(%cl.TDP_give["offerTo"])) {
-			%to = %cl.TDP_give["offerTo"];
-			messageClient(%to, '', "\c3The dirt offer from\c6" SPC %cl.name SPC "\c3has been cancelled");
-			%cl.TDP_endDirtOffer();
+		if (isObject(%this.TDP_give["offerTo"])) {
+			%to = %this.TDP_give["offerTo"];
+			messageClient(%to, '', "\c3The dirt offer from\c6" SPC %this.name SPC "\c3has been cancelled");
+			%this.TDP_endDirtOffer();
 		}
-		if (isObject(%cl.TDP_give["offerFrom"])) {
-			%from = %cl.TDP_give["offerFrom"];
-			messageClient(%from, '', "\c3Your dirt offer to\c6" SPC %cl.name SPC "\c3has been cancelled");
+		if (isObject(%this.TDP_give["offerFrom"])) {
+			%from = %this.TDP_give["offerFrom"];
+			messageClient(%from, '', "\c3Your dirt offer to\c6" SPC %this.name SPC "\c3has been cancelled");
 			%from.TDP_endDirtOffer();
 		}
 

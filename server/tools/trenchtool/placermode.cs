@@ -56,7 +56,7 @@ function TRT_PlacerMode_ghostLoop(%client) {
 }
 
 function TRT_PlacerMode::fire(%this, %client) {
-	if(%client.TDP_dirtCnt <= 0 && !%client.TDP_isInfDirt) {
+	if(%client.TDP_dirtCnt <= 0 && !(%client.TDP_isInfDirt || $TDP::infDirtForAll)) {
 		%client.centerPrint("\c3You have no dirt to release!", 1);
 		return;
 	}
@@ -96,7 +96,7 @@ function TRT_PlacerMode::fire(%this, %client) {
 		%refiller = TDP_Refiller(%pos, %client.TRT_cubeSize, %isBrick);
 		%refiller.planPlacing();
 		%numPlace = %refiller.getNumPlace();
-		if (%client.TDP_dirtCnt < %numPlace && !%client.TDP_isInfDirt) {
+		if (%client.TDP_dirtCnt < %numPlace && !(%client.TDP_isInfDirt || $TDP::infDirtForAll)) {
 			%needed = %numPlace - %client.TDP_dirtCnt;
 			%msg = "\c3You cannot place this much dirt!\n" @
 				 "\c3You need" SPC %needed SPC "more dirt.";
@@ -108,7 +108,7 @@ function TRT_PlacerMode::fire(%this, %client) {
 			%colorIDs = %client.TRT_getDirtColorIDs(%numPlace);
 			%brickGroup = %dirt.getGroup();
 			%refiller.place(%dirt.client, %brickGroup, %client, %colorIDs);
-			if (!%client.TDP_isInfDirt)
+			if (!(%client.TDP_isInfDirt || $TDP::infDirtForAll))
 				%colorIDs = %client.TDP_subDirt(%numPlace);
 	        }
 		%refiller.delete();
