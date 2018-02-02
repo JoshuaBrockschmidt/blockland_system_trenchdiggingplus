@@ -2,8 +2,6 @@
 // Handles preferences
 ////
 
-// TODO: infinite dirt for everyone preference
-
 function TDP_updateDirtGiving(%val) {
 	if (!%val) {
 		for (%i = 0; %i < clientGroup.getCount(); %i++) {

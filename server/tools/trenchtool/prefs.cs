@@ -2,8 +2,6 @@
 // Handles preferences for the Trench Tool.
 ////
 
-// TODO: change color preference to a drop-down list
-
 function TRT_updateCubeSizes() {
 	for (%i = 0; %i < clientGroup.getCount(); %i++) {
 		%cl = clientGroup.getObject(%i);
