@@ -23,11 +23,11 @@ function TRT_updateColorDefault() {
 }
 
 if (isObject(Glass) && Glass.serverLoaded) {
-	registerPref("Trench Digging Plus", "Trench Tool", "Max Cube Size", "dropdown", "$TRT::maxCubeSize", "System_TrenchDiggingPlus", 4, "1 1 2 2 3 3 4 4 5 5 6 6", "TRT_updateCubeSizes", 0, 0, 0);
-	registerPref("Trench Digging Plus", "Trench Tool", "Range", "dropdown", "$TRT::toolRange", "System_TrenchDiggingPlus", 10, "5 5 10 10 15 15 20 20", "", 0, 0, 0);
-	registerPref("Trench Digging Plus", "Trench Tool", "Delay Multiplier (seconds)", "num", "$TRT::delayMult", "System_TrenchDiggingPlus", 1, "0 5 1", "", 0, 0, 0);
-	registerPref("Trench Digging Plus", "Trench Tool", "Players Choose Dirt Color", "bool", "$TRT::canChooseColor", "System_TrenchDiggingPlus", true, "", "", 0, 0, 0);
-	registerPref("Trench Digging Plus", "Trench Tool", "Use Default Dirt Color", "bool", "$TRT::colorIsDefault", "System_TrenchDiggingPlus", false, "TRT_updateColorDefault", "", 0, 0, 0);
+	registerPref("Trench Digging Plus", "Trench Tool", "Max Cube Size", "dropdown", "TRT::maxCubeSize", "System_TrenchDiggingPlus", 4, "1 1 2 2 3 3 4 4 5 5 6 6", "TRT_updateCubeSizes", 0, 0, 0);
+	registerPref("Trench Digging Plus", "Trench Tool", "Range", "dropdown", "TRT::toolRange", "System_TrenchDiggingPlus", 10, "5 5 10 10 15 15 20 20", "", 0, 0, 0);
+	registerPref("Trench Digging Plus", "Trench Tool", "Delay Multiplier (seconds)", "num", "TRT::delayMult", "System_TrenchDiggingPlus", 1, "0 5 1", "", 0, 0, 0);
+	registerPref("Trench Digging Plus", "Trench Tool", "Players Choose Dirt Color", "bool", "TRT::canChooseColor", "System_TrenchDiggingPlus", true, "", "", 0, 0, 0);
+	registerPref("Trench Digging Plus", "Trench Tool", "Use Default Dirt Color", "bool", "TRT::colorIsDefault", "System_TrenchDiggingPlus", false, "", "TRT_updateColorDefault", 0, 0, 0);
 }
 
 // Maximum size of cubes for placing and digging dirt
